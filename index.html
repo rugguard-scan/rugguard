@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RugGuard — Solana token safety check</title>
+<style>
+  :root {
+    --ink:        #14203a;
+    --ink-soft:   #2c3a5a;
+    --paper:      #f5f3ee;
+    --card:       #ffffff;
+    --line:       #dcd7cc;
+    --muted:      #6a6f7b;
+    --gold:       #b0842f;
+    --green:      #2f7d4f;
+    --amber:      #c08a1e;
+    --red:        #b23636;
+    --red-bg:     #fbeceb;
+    --shadow:     0 1px 3px rgba(20,32,58,.06), 0 8px 30px rgba(20,32,58,.05);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    font-family: Georgia, 'Times New Roman', serif;
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.6;
+    padding: 0 20px;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; }
+
+  .langbar { display: flex; justify-content: flex-end; padding-top: 18px; }
+  .langswitch {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    display: inline-flex; border: 1px solid var(--line); border-radius: 999px;
+    overflow: hidden; background: var(--card); box-shadow: var(--shadow);
+  }
+  .langswitch button {
+    border: none; background: transparent; cursor: pointer;
+    padding: 7px 16px; font-size: 13px; font-weight: 600; color: var(--muted);
+  }
+  .langswitch button.active { background: var(--ink); color: #fff; }
+
+  header { padding: 22px 0 28px; text-align: center; }
+  .logo { font-size: 40px; font-weight: bold; letter-spacing: -0.5px; color: var(--ink); }
+  .logo .shield { color: var(--gold); }
+  .tag {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 15px; color: var(--muted); margin-top: 8px;
+  }
+
+  .intro {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: 10px; padding: 22px 24px; box-shadow: var(--shadow);
+    margin-bottom: 22px; font-size: 15.5px; color: var(--ink-soft);
+  }
+  .intro strong { color: var(--ink); }
+
+  .scan { background: var(--ink); border-radius: 12px; padding: 28px; box-shadow: var(--shadow); margin-bottom: 14px; }
+  .scan label { display: block; font-family: -apple-system, sans-serif; color: #c8cfdd; font-size: 14px; margin-bottom: 10px; }
+  .scan-row { display: flex; gap: 10px; }
+  #mint {
+    flex: 1; font-family: 'SF Mono', Menlo, Consolas, monospace; font-size: 14px;
+    padding: 14px 15px; border: 1px solid #35446a; border-radius: 8px;
+    background: #0f1830; color: #f5f3ee; min-width: 0;
+  }
+  #mint::placeholder { color: #6b7793; }
+  #mint:focus { outline: 2px solid var(--gold); border-color: transparent; }
+  button.go {
+    font-family: -apple-system, sans-serif; font-size: 15px; font-weight: 600;
+    padding: 14px 22px; border: none; border-radius: 8px; background: var(--gold);
+    color: #fff; cursor: pointer; white-space: nowrap; transition: background .15s ease;
+  }
+  button.go:hover { background: #9a7127; }
+  button.go:disabled { background: #5c5340; cursor: default; }
+
+  .disclaimer {
+    font-family: -apple-system, sans-serif; font-size: 13px; color: var(--muted);
+    text-align: center; padding: 4px 6px 26px;
+  }
+
+  #result { display: none; margin-bottom: 40px; }
+  #result.show { display: block; animation: rise .3s ease; }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px);} to {opacity:1; transform:none;} }
+
+  .verdict { border-radius: 12px; padding: 24px; color: #fff; margin-bottom: 18px; box-shadow: var(--shadow); }
+  .verdict.low  { background: var(--green); }
+  .verdict.mid  { background: var(--amber); }
+  .verdict.high { background: var(--red); }
+  .verdict .score-line { font-family: -apple-system, sans-serif; font-size: 14px; opacity: .9; display: flex; justify-content: space-between; align-items: baseline; }
+  .verdict .score { font-size: 52px; font-weight: bold; line-height: 1.1; margin: 4px 0 10px; }
+  .verdict .token-name { font-size: 18px; font-weight: bold; margin-bottom: 2px; }
+  .verdict .headline { font-family: -apple-system, sans-serif; font-size: 15px; }
+
+  .checks { background: var(--card); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); }
+  .check { display: flex; gap: 14px; padding: 16px 20px; border-bottom: 1px solid var(--line); font-family: -apple-system, sans-serif; }
+  .check:last-child { border-bottom: none; }
+  .dot { flex-shrink: 0; width: 12px; height: 12px; border-radius: 50%; margin-top: 6px; }
+  .dot.OK { background: var(--green); }
+  .dot.WARN { background: var(--amber); }
+  .dot.DANGER { background: var(--red); }
+  .dot.UNKNOWN { background: #b9bcc4; }
+  .check .body h4 { font-size: 15px; margin-bottom: 2px; color: var(--ink); }
+  .check .body p { font-size: 14px; color: var(--muted); }
+
+  .full-disclaimer {
+    font-family: -apple-system, sans-serif; font-size: 13px; color: var(--muted);
+    background: var(--red-bg); border: 1px solid #e9d3d1; border-radius: 10px;
+    padding: 18px 20px; margin: 18px 0 44px; line-height: 1.55;
+  }
+  .full-disclaimer b { color: var(--red); }
+
+  .loading { font-family: -apple-system, sans-serif; text-align: center; color: var(--muted); padding: 30px; font-size: 15px; }
+  .err { font-family: -apple-system, sans-serif; background: var(--red-bg); border: 1px solid #e9d3d1; color: var(--red); border-radius: 10px; padding: 16px 18px; font-size: 14px; margin-bottom: 20px; }
+
+  footer { font-family: -apple-system, sans-serif; text-align: center; color: var(--muted); font-size: 13px; padding: 20px 0 50px; border-top: 1px solid var(--line); }
+  @media (max-width: 560px) { .scan-row { flex-direction: column; } .logo { font-size: 32px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="langbar">
+    <div class="langswitch">
+      <button id="lang-en" class="active" onclick="setLang('en')">EN</button>
+      <button id="lang-nl" onclick="setLang('nl')">NL</button>
+    </div>
+  </div>
+
+  <header>
+    <div class="logo"><span class="shield">&#9670;</span> RugGuard</div>
+    <div class="tag" id="t-tag"></div>
+  </header>
+
+  <div class="intro" id="t-intro"></div>
+
+  <div class="scan">
+    <label for="mint" id="t-label"></label>
+    <div class="scan-row">
+      <input id="mint" type="text" spellcheck="false"
+             placeholder="EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" />
+      <button class="go" id="go" onclick="run()"></button>
+    </div>
+  </div>
+  <div class="disclaimer" id="t-strip"></div>
+
+  <div id="result"></div>
+
+  <footer id="t-footer"></footer>
+
+</div>
+
+<script>
+// De app praat met ons eigen beveiligde tussenlaagje (/api/rpc), niet
+// rechtstreeks met Helius. De geheime sleutel zit veilig op de server.
+const RPC = "/api/rpc";
+const DEX = "https://api.dexscreener.com/latest/dex/tokens/";
+
+const T = {
+  en: {
+    tag: "Check a Solana token for known rug-pull signals — before you buy in",
+    intro: "Paste a Solana token's mint address below. RugGuard checks a set of known technical risks: <strong>whether you can sell again, whether there's enough liquidity, whether the supply is spread out, and whether the creators can mint more or freeze your wallet.</strong> The result is a tool, not a judgement on whether you should invest.",
+    label: "Solana token mint address",
+    button: "Scan token",
+    scanning: "Scanning…",
+    strip: "Not financial advice · no guarantee of safety or profit · use at your own risk",
+    footer: "RugGuard analyses public on-chain data. A clean score is no guarantee — never invest more than you can afford to lose completely.",
+    loading: "Fetching on-chain data and analysing…",
+    scoreLabel: "Risk score",
+    scoreHint: "higher = riskier",
+    badAddr: "This doesn't look like a valid Solana address. A mint address is usually 32–44 characters long.",
+    rpcErr: "The public Solana server limits how many requests it accepts; wait a moment and try again.",
+    somethingWrong: "Something went wrong: ",
+    unknownToken: "Unknown token",
+    disclaimer: "<b>Read this before you invest.</b> RugGuard detects known technical risks, but it cannot see whether the hype fades, whether the market turns, or whether the creators have a subtler exit. A token that shows no red flags can still become completely worthless. This is not financial advice and no guarantee of safety or profit. Every decision is entirely at your own risk; the provider of RugGuard is not liable for any loss. Never invest more than you can afford to lose completely.",
+    verdict: {
+      high: "High risk — multiple serious red flags. High chance of a trap.",
+      mid:  "Elevated risk — there are concerns. Only with money you can afford to lose completely.",
+      low:  "No serious technical red flags found. Note: this is not a guarantee."
+    },
+    checks: {
+      mintDanger:  ["Minting (mint authority)", "Active — the creators can mint new tokens and dilute your share."],
+      mintOk:      ["Minting (mint authority)", "Disabled — the supply cannot be inflated."],
+      mintUnknown: ["Minting (mint authority)", "Could not be retrieved."],
+      freezeDanger:  ["Wallet freezing (freeze authority)", "Active — the creators can freeze tokens, so you can't sell (honeypot risk)."],
+      freezeOk:      ["Wallet freezing (freeze authority)", "Disabled — your tokens cannot be frozen."],
+      freezeUnknown: ["Wallet freezing (freeze authority)", "Could not be retrieved."],
+      liqDanger:  function(v){ return ["Liquidity", "Very low ($" + v + "). Easy to manipulate and selling may stall."]; },
+      liqWarn:    function(v){ return ["Liquidity", "Low ($" + v + "). Be careful with larger amounts."]; },
+      liqOk:      function(v){ return ["Liquidity", "Reasonable ($" + v + ")."]; },
+      liqUnknown: ["Liquidity", "No trading pair found."],
+      volWarn:    function(v){ return ["Trading volume (24h)", "Very low ($" + v + "). Few buyers and sellers active."]; },
+      volOk:      function(v){ return ["Trading volume (24h)", "$" + v + " traded in 24 hours."]; },
+      volUnknown: ["Trading volume (24h)", "Unknown."],
+      ageDanger:  function(h){ return ["Age", "Extremely new (" + h + " hours). Highest risk; insiders are still early."]; },
+      ageWarn:    function(h){ return ["Age", "Very new (" + h + " hours). Still unproven."]; },
+      ageOk:      function(d){ return ["Age", d + " days old."]; },
+      ageUnknown: ["Age", "Creation date unknown."],
+      holdDanger:  function(p){ return ["Supply distribution", "The 10 largest wallets hold " + p + "%. They can crash the price."]; },
+      holdWarn:    function(p){ return ["Supply distribution", "The 10 largest wallets hold " + p + "%. Elevated risk."]; },
+      holdOk:      function(p){ return ["Supply distribution", "The 10 largest wallets hold " + p + "%. Reasonably spread out."]; },
+      holdUnknown: ["Supply distribution", "Could not retrieve holders."]
+    }
+  },
+  nl: {
+    tag: "Controleer een Solana-token op bekende rug-pull-signalen — voordat je instapt",
+    intro: "Plak hieronder het adres (mint address) van een Solana-token. RugGuard checkt een aantal bekende technische risico's: <strong>kun je weer verkopen, staat er genoeg liquiditeit, zit de voorraad verspreid, en kunnen de makers bijdrukken of je wallet bevriezen.</strong> Het resultaat is een hulpmiddel, geen oordeel over of je moet investeren.",
+    label: "Solana token mint-adres",
+    button: "Scan token",
+    scanning: "Bezig…",
+    strip: "Geen financieel advies · geen garantie op veiligheid of winst · gebruik op eigen risico",
+    footer: "RugGuard analyseert publieke on-chain data. Een schone score is geen garantie — investeer nooit meer dan je volledig kunt missen.",
+    loading: "On-chain data ophalen en analyseren…",
+    scoreLabel: "Risicoscore",
+    scoreHint: "hoger = risicovoller",
+    badAddr: "Dit lijkt geen geldig Solana-adres. Een mint-adres is doorgaans 32–44 tekens lang.",
+    rpcErr: "De publieke Solana-server heeft een limiet op verzoeken; wacht even en probeer opnieuw.",
+    somethingWrong: "Er ging iets mis: ",
+    unknownToken: "Onbekende token",
+    disclaimer: "<b>Lees dit voordat je investeert.</b> RugGuard spoort bekende technische risico's op, maar kan niet zien of de hype wegvalt, of de markt keert, of de makers een subtielere exit hebben. Een token die geen rode vlaggen toont, kan alsnog volledig waardeloos worden. Dit is geen financieel advies en geen garantie op veiligheid of winst. Elke beslissing neem je volledig op eigen risico; de aanbieder van RugGuard is niet aansprakelijk voor enig verlies. Investeer nooit meer dan je volledig kunt missen.",
+    verdict: {
+      high: "Hoog risico — meerdere ernstige rode vlaggen. Grote kans op een val.",
+      mid:  "Verhoogd risico — er zijn zorgen. Alleen met geld dat je volledig kunt missen.",
+      low:  "Geen ernstige technische rode vlaggen gevonden. Let op: dit is geen garantie."
+    },
+    checks: {
+      mintDanger:  ["Bijdrukken (mint authority)", "Actief — de makers kunnen nieuwe tokens aanmaken en jouw aandeel verwateren."],
+      mintOk:      ["Bijdrukken (mint authority)", "Uitgeschakeld — de voorraad kan niet worden bijgedrukt."],
+      mintUnknown: ["Bijdrukken (mint authority)", "Kon niet worden opgehaald."],
+      freezeDanger:  ["Wallet bevriezen (freeze authority)", "Actief — de makers kunnen tokens bevriezen, waardoor je niet kunt verkopen (honeypot-risico)."],
+      freezeOk:      ["Wallet bevriezen (freeze authority)", "Uitgeschakeld — je tokens kunnen niet worden bevroren."],
+      freezeUnknown: ["Wallet bevriezen (freeze authority)", "Kon niet worden opgehaald."],
+      liqDanger:  function(v){ return ["Liquiditeit", "Zeer laag ($" + v + "). Makkelijk te manipuleren en verkopen kan vastlopen."]; },
+      liqWarn:    function(v){ return ["Liquiditeit", "Laag ($" + v + "). Wees voorzichtig met grotere bedragen."]; },
+      liqOk:      function(v){ return ["Liquiditeit", "Redelijk ($" + v + ")."]; },
+      liqUnknown: ["Liquiditeit", "Geen handelspaar gevonden."],
+      volWarn:    function(v){ return ["Handelsvolume (24u)", "Erg laag ($" + v + "). Weinig kopers en verkopers actief."]; },
+      volOk:      function(v){ return ["Handelsvolume (24u)", "$" + v + " verhandeld in 24 uur."]; },
+      volUnknown: ["Handelsvolume (24u)", "Onbekend."],
+      ageDanger:  function(h){ return ["Leeftijd", "Extreem nieuw (" + h + " uur). Hoogste risico; insiders zitten er nog vroeg in."]; },
+      ageWarn:    function(h){ return ["Leeftijd", "Zeer nieuw (" + h + " uur). Nog onbewezen."]; },
+      ageOk:      function(d){ return ["Leeftijd", d + " dagen oud."]; },
+      ageUnknown: ["Leeftijd", "Aanmaakdatum onbekend."],
+      holdDanger:  function(p){ return ["Spreiding van de voorraad", "De 10 grootste wallets bezitten " + p + "%. Zij kunnen de prijs laten instorten."]; },
+      holdWarn:    function(p){ return ["Spreiding van de voorraad", "De 10 grootste wallets bezitten " + p + "%. Verhoogd risico."]; },
+      holdOk:      function(p){ return ["Spreiding van de voorraad", "De 10 grootste wallets bezitten " + p + "%. Redelijk verspreid."]; },
+      holdUnknown: ["Spreiding van de voorraad", "Kon houders niet ophalen."]
+    }
+  }
+};
+
+let lang = "en";
+let lastResult = null;
+
+function setLang(l) {
+  lang = l;
+  document.documentElement.lang = l;
+  document.getElementById("lang-en").classList.toggle("active", l === "en");
+  document.getElementById("lang-nl").classList.toggle("active", l === "nl");
+  applyStaticText();
+  if (lastResult) render(lastResult);
+}
+
+function applyStaticText() {
+  const t = T[lang];
+  document.getElementById("t-tag").textContent = t.tag;
+  document.getElementById("t-intro").innerHTML = t.intro;
+  document.getElementById("t-label").textContent = t.label;
+  document.getElementById("go").textContent = t.button;
+  document.getElementById("t-strip").textContent = t.strip;
+  document.getElementById("t-footer").textContent = t.footer;
+}
+
+async function rpc(method, params) {
+  const res = await fetch(RPC, {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: method, params: params }),
+  });
+  if (!res.ok) throw new Error(T[lang].rpcErr);
+  return (await res.json()).result;
+}
+async function getDex(mint) {
+  try {
+    const res = await fetch(DEX + mint);
+    if (!res.ok) return null;
+    const json = await res.json();
+    if (!json.pairs || !json.pairs.length) return null;
+    const sol = json.pairs.filter(function(p){ return p.chainId === "solana"; });
+    const list = sol.length ? sol : json.pairs;
+    return list.reduce(function(a, b){ return ((a.liquidity && a.liquidity.usd || 0) >= (b.liquidity && b.liquidity.usd || 0) ? a : b); });
+  } catch (e) { return null; }
+}
+function fmt(n) { return Math.round(n).toLocaleString(lang === "nl" ? "nl-NL" : "en-US"); }
+
+function buildChecks(info, pair, holders, supply) {
+  const checks = [];
+
+  if (!info) checks.push({ key: "freezeUnknown", level: "UNKNOWN", weight: 0 });
+  else if (info.freezeAuthority) checks.push({ key: "freezeDanger", level: "DANGER", weight: 25 });
+  else checks.push({ key: "freezeOk", level: "OK", weight: 0 });
+
+  if (!info) checks.push({ key: "mintUnknown", level: "UNKNOWN", weight: 0 });
+  else if (info.mintAuthority) checks.push({ key: "mintDanger", level: "DANGER", weight: 30 });
+  else checks.push({ key: "mintOk", level: "OK", weight: 0 });
+
+  const liq = pair && pair.liquidity ? pair.liquidity.usd : null;
+  if (liq == null) checks.push({ key: "liqUnknown", level: "UNKNOWN", weight: 0 });
+  else if (liq < 10000) checks.push({ key: "liqDanger", level: "DANGER", weight: 20, arg: liq });
+  else if (liq < 50000) checks.push({ key: "liqWarn", level: "WARN", weight: 10, arg: liq });
+  else checks.push({ key: "liqOk", level: "OK", weight: 0, arg: liq });
+
+  if (!holders || !supply) checks.push({ key: "holdUnknown", level: "UNKNOWN", weight: 0 });
+  else {
+    const top = holders.slice(0, 10).reduce(function(s, h){ return s + (h.uiAmount || 0); }, 0);
+    const pct = supply ? (top / supply * 100) : 0;
+    if (pct > 70) checks.push({ key: "holdDanger", level: "DANGER", weight: 25, arg: pct });
+    else if (pct > 40) checks.push({ key: "holdWarn", level: "WARN", weight: 12, arg: pct });
+    else checks.push({ key: "holdOk", level: "OK", weight: 0, arg: pct });
+  }
+
+  const t = pair ? pair.pairCreatedAt : null;
+  if (!t) checks.push({ key: "ageUnknown", level: "UNKNOWN", weight: 0 });
+  else {
+    const h = (Date.now() - t) / 3.6e6;
+    if (h < 1) checks.push({ key: "ageDanger", level: "DANGER", weight: 15, arg: h });
+    else if (h < 24) checks.push({ key: "ageWarn", level: "WARN", weight: 8, arg: h });
+    else checks.push({ key: "ageOk", level: "OK", weight: 0, arg: h / 24 });
+  }
+
+  const v = pair && pair.volume ? pair.volume.h24 : null;
+  if (v == null) checks.push({ key: "volUnknown", level: "UNKNOWN", weight: 0 });
+  else if (v < 5000) checks.push({ key: "volWarn", level: "WARN", weight: 5, arg: v });
+  else checks.push({ key: "volOk", level: "OK", weight: 0, arg: v });
+
+  return checks;
+}
+
+function localizeCheck(c) {
+  const entry = T[lang].checks[c.key];
+  if (typeof entry === "function") {
+    let a = c.arg;
+    if (c.key.indexOf("liq") === 0 || c.key.indexOf("vol") === 0) a = fmt(a);
+    else if (c.key.indexOf("age") === 0) a = a.toFixed(1);
+    else if (c.key.indexOf("hold") === 0) a = a.toFixed(0);
+    return entry(a);
+  }
+  return entry;
+}
+
+async function analyze(mint) {
+  const pair = await getDex(mint);
+  let info = null, supply = null, holders = null;
+  try { const acc = await rpc("getAccountInfo", [mint, { encoding: "jsonParsed" }]); info = acc && acc.value && acc.value.data && acc.value.data.parsed ? acc.value.data.parsed.info : null; } catch (e) {}
+  try { const s = await rpc("getTokenSupply", [mint]); supply = s && s.value ? s.value.uiAmount : null; } catch (e) {}
+  try { const h = await rpc("getTokenLargestAccounts", [mint]); holders = h ? h.value : null; } catch (e) {}
+
+  const checks = buildChecks(info, pair, holders, supply);
+  let score = Math.min(100, checks.filter(function(c){ return c.level === "DANGER" || c.level === "WARN"; }).reduce(function(s, c){ return s + c.weight; }, 0));
+  const dangers = checks.filter(function(c){ return c.level === "DANGER"; }).length;
+
+  let band;
+  if (score >= 60 || dangers >= 2) band = "high";
+  else if (score >= 30 || dangers >= 1) band = "mid";
+  else band = "low";
+
+  return {
+    checks: checks, score: score, band: band, dangers: dangers,
+    name: pair && pair.baseToken ? pair.baseToken.name : null,
+    symbol: pair && pair.baseToken ? pair.baseToken.symbol : "?",
+  };
+}
+
+function render(r) {
+  const t = T[lang];
+  const out = document.getElementById("result");
+  const name = r.name || t.unknownToken;
+
+  const rows = r.checks.map(function(c){
+    const loc = localizeCheck(c);
+    return '<div class="check"><div class="dot ' + c.level + '"></div>' +
+      '<div class="body"><h4>' + escapeHtml(loc[0]) + '</h4><p>' + escapeHtml(loc[1]) + '</p></div></div>';
+  }).join("");
+
+  out.className = "show";
+  out.innerHTML =
+    '<div class="verdict ' + r.band + '">' +
+      '<div class="token-name">' + escapeHtml(name) + ' (' + escapeHtml(r.symbol) + ')</div>' +
+      '<div class="score-line"><span>' + t.scoreLabel + '</span><span>' + t.scoreHint + '</span></div>' +
+      '<div class="score">' + r.score + '<span style="font-size:22px;opacity:.7">/100</span></div>' +
+      '<div class="headline">' + t.verdict[r.band] + '</div>' +
+    '</div>' +
+    '<div class="checks">' + rows + '</div>' +
+    '<div class="full-disclaimer">' + t.disclaimer + '</div>';
+}
+
+function run() {
+  const mint = document.getElementById("mint").value.trim();
+  const out = document.getElementById("result");
+  const btn = document.getElementById("go");
+  const t = T[lang];
+
+  if (mint.length < 32 || mint.length > 46) {
+    lastResult = null;
+    out.className = "show";
+    out.innerHTML = '<div class="err">' + t.badAddr + '</div>';
+    return;
+  }
+
+  btn.disabled = true; btn.textContent = t.scanning;
+  out.className = "show";
+  out.innerHTML = '<div class="loading">' + t.loading + '</div>';
+
+  analyze(mint).then(function(r){
+    lastResult = r;
+    render(r);
+    btn.disabled = false; btn.textContent = t.button;
+  }).catch(function(err){
+    lastResult = null;
+    out.innerHTML = '<div class="err">' + t.somethingWrong + escapeHtml(err.message) + '<br>' + t.rpcErr + '</div>';
+    btn.disabled = false; btn.textContent = t.button;
+  });
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, function(m){ return ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" })[m]; });
+}
+
+document.getElementById("mint").addEventListener("keydown", function(e){ if (e.key === "Enter") run(); });
+
+applyStaticText();
+</script>
+</body>
+</html>

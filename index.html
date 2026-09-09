@@ -6,181 +6,275 @@
 <title>RugGuard — Solana token safety check</title>
 <style>
   :root {
-    --ink:        #14203a;
-    --ink-soft:   #2c3a5a;
-    --paper:      #f5f3ee;
-    --card:       #ffffff;
-    --line:       #dcd7cc;
-    --muted:      #6a6f7b;
-    --gold:       #b0842f;
-    --green:      #2f7d4f;
-    --amber:      #c08a1e;
-    --red:        #b23636;
-    --red-bg:     #fbeceb;
-    --shadow:     0 1px 3px rgba(20,32,58,.06), 0 8px 30px rgba(20,32,58,.05);
+    /* Donkere, iets warme indigo-nacht i.p.v. pikzwart cliché */
+    --bg:        #12101f;
+    --bg-2:      #1a1730;
+    --surface:   #201c38;
+    --surface-2: #282247;
+    --line:      #362f57;
+    --text:      #f3f1fb;
+    --text-soft: #c7c2e0;
+    --muted:     #8b86a8;
+    /* Accenten */
+    --mint:      #34e2b0;   /* veilig / laag risico */
+    --mint-dim:  #1f8f6f;
+    --violet:    #8b6bff;   /* merk-energie */
+    --amber2:    #ffb638;   /* midden */
+    --coral:     #ff5d6c;   /* gevaar / hoog risico */
+    --coral-dim: #b23545;
+    --glow-mint: 0 0 0 1px rgba(52,226,176,.35), 0 8px 30px rgba(52,226,176,.18);
+    --glow-violet: 0 10px 40px rgba(139,107,255,.28);
+    --shadow: 0 2px 8px rgba(0,0,0,.35), 0 18px 50px rgba(0,0,0,.35);
+    --radius: 18px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html { -webkit-text-size-adjust: 100%; }
   body {
-    font-family: Georgia, 'Times New Roman', serif;
-    background: var(--paper);
-    color: var(--ink);
-    line-height: 1.6;
-    padding: 0 20px;
+    font-family: 'Space Grotesk', ui-rounded, 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(139,107,255,.20), transparent 60%),
+      radial-gradient(900px 500px at 0% 0%, rgba(52,226,176,.10), transparent 55%),
+      var(--bg);
+    background-attachment: fixed;
+    color: var(--text);
+    line-height: 1.55;
+    padding: 0 18px;
+    min-height: 100vh;
   }
-  .wrap { max-width: 720px; margin: 0 auto; }
+  .wrap { max-width: 640px; margin: 0 auto; }
 
-  .langbar { display: flex; justify-content: flex-end; padding-top: 18px; }
+  /* Bovenbalk */
+  .topbar { display: flex; justify-content: space-between; align-items: center; padding-top: 20px; }
   .langswitch {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     display: inline-flex; border: 1px solid var(--line); border-radius: 999px;
-    overflow: hidden; background: var(--card); box-shadow: var(--shadow);
+    overflow: hidden; background: var(--surface);
   }
   .langswitch button {
     border: none; background: transparent; cursor: pointer;
-    padding: 7px 16px; font-size: 13px; font-weight: 600; color: var(--muted);
+    padding: 8px 16px; font-size: 13px; font-weight: 600; color: var(--muted);
+    font-family: inherit; transition: color .15s ease;
   }
-  .langswitch button.active { background: var(--ink); color: #fff; }
+  .langswitch button.active { background: var(--violet); color: #fff; }
+  .helpbtn {
+    font-family: inherit; font-size: 13px; font-weight: 600;
+    padding: 8px 15px; border: 1px solid var(--line); border-radius: 999px;
+    background: var(--surface); color: var(--text-soft); cursor: pointer; margin-right: 10px;
+    transition: border-color .15s ease, color .15s ease;
+  }
+  .helpbtn:hover { border-color: var(--mint); color: var(--mint); }
 
-  header { padding: 22px 0 28px; text-align: center; }
-  .logo {
-    display: inline-flex; align-items: center; gap: 14px;
-    font-size: 40px; font-weight: bold; letter-spacing: -0.5px; color: var(--ink);
-  }
-  .logo-mark { width: 52px; height: 52px; flex-shrink: 0; }
+  /* Header */
+  header { padding: 26px 0 22px; text-align: center; }
+  .logo { display: inline-flex; align-items: center; gap: 13px; font-size: 34px; font-weight: 700; letter-spacing: -1px; color: var(--text); }
+  .logo-mark { width: 48px; height: 48px; flex-shrink: 0; filter: drop-shadow(0 4px 14px rgba(139,107,255,.4)); }
   .logo-word { line-height: 1; }
-  .tag {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    font-size: 15px; color: var(--muted); margin-top: 8px;
-  }
+  .tag { font-size: 15px; color: var(--text-soft); margin-top: 10px; font-weight: 500; }
 
+  /* Intro */
   .intro {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: var(--card); border: 1px solid var(--line);
-    border-radius: 10px; padding: 22px 24px; box-shadow: var(--shadow);
-    margin-bottom: 22px; font-size: 15.5px; color: var(--ink-soft);
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 18px 20px;
+    margin-bottom: 20px; font-size: 15px; color: var(--text-soft);
   }
-  .intro strong { color: var(--ink); }
+  .intro strong { color: var(--text); font-weight: 600; }
 
-  .scan { background: var(--ink); border-radius: 12px; padding: 28px; box-shadow: var(--shadow); margin-bottom: 14px; }
-  .scan label { display: block; font-family: -apple-system, sans-serif; color: #c8cfdd; font-size: 14px; margin-bottom: 10px; }
+  /* Scan-box: de held-input */
+  .scan {
+    background: linear-gradient(160deg, var(--surface-2), var(--surface));
+    border: 1px solid var(--line); border-radius: 22px; padding: 22px;
+    margin-bottom: 12px; box-shadow: var(--glow-violet);
+  }
+  .scan label { display: block; font-size: 13px; margin-bottom: 10px; color: var(--text-soft); font-weight: 600; }
   .scan-row { display: flex; gap: 10px; }
   #mint {
-    flex: 1; font-family: 'SF Mono', Menlo, Consolas, monospace; font-size: 14px;
-    padding: 14px 15px; border: 1px solid #35446a; border-radius: 8px;
-    background: #0f1830; color: #f5f3ee; min-width: 0;
+    flex: 1; font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 14px;
+    padding: 15px 16px; border: 1.5px solid var(--line); border-radius: 14px;
+    background: var(--bg-2); color: var(--text); min-width: 0;
   }
-  #mint::placeholder { color: #6b7793; }
-  #mint:focus { outline: 2px solid var(--gold); border-color: transparent; }
+  #mint::placeholder { color: var(--muted); }
+  #mint:focus { outline: none; border-color: var(--violet); box-shadow: 0 0 0 3px rgba(139,107,255,.25); }
   button.go {
-    font-family: -apple-system, sans-serif; font-size: 15px; font-weight: 600;
-    padding: 14px 22px; border: none; border-radius: 8px; background: var(--gold);
-    color: #fff; cursor: pointer; white-space: nowrap; transition: background .15s ease;
+    font-family: inherit; font-size: 15px; font-weight: 700;
+    padding: 15px 24px; border: none; border-radius: 14px; white-space: nowrap; cursor: pointer;
+    background: linear-gradient(135deg, var(--mint), #2ad0e0); color: #0b1220;
+    transition: transform .1s ease, box-shadow .2s ease;
+    box-shadow: 0 6px 20px rgba(52,226,176,.35);
   }
-  button.go:hover { background: #9a7127; }
-  button.go:disabled { background: #5c5340; cursor: default; }
+  button.go:hover { transform: translateY(-1px); box-shadow: 0 9px 26px rgba(52,226,176,.45); }
+  button.go:active { transform: translateY(0); }
+  button.go:disabled { background: var(--surface-2); color: var(--muted); box-shadow: none; cursor: default; }
 
-  .disclaimer {
-    font-family: -apple-system, sans-serif; font-size: 13px; color: var(--muted);
-    text-align: center; padding: 4px 6px 26px;
-  }
+  .disclaimer { font-size: 12.5px; color: var(--muted); text-align: center; padding: 4px 6px 24px; }
 
   #result { display: none; margin-bottom: 40px; }
-  #result.show { display: block; animation: rise .3s ease; }
-  @keyframes rise { from { opacity: 0; transform: translateY(8px);} to {opacity:1; transform:none;} }
+  #result.show { display: block; }
 
-  .verdict { border-radius: 12px; padding: 24px; color: #fff; margin-bottom: 18px; box-shadow: var(--shadow); }
-  .verdict.low  { background: var(--green); }
-  .verdict.mid  { background: var(--amber); }
-  .verdict.high { background: var(--red); }
-  .verdict .score-line { font-family: -apple-system, sans-serif; font-size: 14px; opacity: .9; display: flex; justify-content: space-between; align-items: baseline; }
-  .verdict .score { font-size: 52px; font-weight: bold; line-height: 1.1; margin: 4px 0 10px; }
-  .verdict .token-name { font-size: 18px; font-weight: bold; margin-bottom: 2px; }
-  .verdict .headline { font-family: -apple-system, sans-serif; font-size: 15px; }
-
-  .checks { background: var(--card); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); }
-  .check { display: flex; gap: 14px; padding: 16px 20px; border-bottom: 1px solid var(--line); font-family: -apple-system, sans-serif; }
-  .check:last-child { border-bottom: none; }
-  .dot { flex-shrink: 0; width: 12px; height: 12px; border-radius: 50%; margin-top: 6px; }
-  .dot.OK { background: var(--green); }
-  .dot.WARN { background: var(--amber); }
-  .dot.DANGER { background: var(--red); }
-  .dot.UNKNOWN { background: #b9bcc4; }
-  .check .body h4 { font-size: 15px; margin-bottom: 2px; color: var(--ink); }
-  .check .body p { font-size: 14px; color: var(--muted); }
-
-  .full-disclaimer {
-    font-family: -apple-system, sans-serif; font-size: 13px; color: var(--muted);
-    background: var(--red-bg); border: 1px solid #e9d3d1; border-radius: 10px;
-    padding: 18px 20px; margin: 18px 0 44px; line-height: 1.55;
+  /* Verdict / score-hero */
+  .verdict {
+    border-radius: 22px; padding: 26px 24px; margin-bottom: 16px; position: relative; overflow: hidden;
+    border: 1px solid var(--line);
   }
-  .full-disclaimer b { color: var(--red); }
+  .verdict.low  { background: radial-gradient(120% 140% at 50% -20%, rgba(52,226,176,.28), transparent 60%), var(--surface); }
+  .verdict.mid  { background: radial-gradient(120% 140% at 50% -20%, rgba(255,182,56,.26), transparent 60%), var(--surface); }
+  .verdict.high { background: radial-gradient(120% 140% at 50% -20%, rgba(255,93,108,.28), transparent 60%), var(--surface); }
+  .verdict .token-name { font-size: 17px; font-weight: 700; margin-bottom: 12px; color: var(--text); }
+  .verdict .score-line { font-size: 13px; color: var(--text-soft); display: flex; justify-content: space-between; align-items: baseline; }
+  .verdict .score { font-size: 66px; font-weight: 700; line-height: 1; margin: 6px 0 12px; letter-spacing: -2px; }
+  .verdict.low  .score { color: var(--mint); }
+  .verdict.mid  .score { color: var(--amber2); }
+  .verdict.high .score { color: var(--coral); }
+  .verdict .score.count { animation: countpop .5s ease-out; }
+  @keyframes countpop { from { opacity:0; transform: scale(.7); } to { opacity:1; transform: scale(1);} }
+  .verdict .headline { font-size: 15px; font-weight: 500; color: var(--text); }
 
+  /* Score-meterbalk */
+  .meter { height: 8px; border-radius: 99px; background: var(--bg-2); overflow: hidden; margin: 2px 0 14px; }
+  .meter > span { display: block; height: 100%; border-radius: 99px; transition: width .7s cubic-bezier(.2,.8,.2,1); }
+  .verdict.low  .meter > span { background: linear-gradient(90deg, var(--mint), #2ad0e0); }
+  .verdict.mid  .meter > span { background: linear-gradient(90deg, var(--amber2), #ff9f45); }
+  .verdict.high .meter > span { background: linear-gradient(90deg, var(--coral), #ff7a52); }
+
+  /* Score-uitleg blokje */
   .score-explain {
-    font-family: -apple-system, sans-serif; font-size: 14px; color: var(--ink-soft);
-    background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--gold);
-    border-radius: 8px; padding: 14px 16px; margin-bottom: 16px; line-height: 1.5;
+    font-size: 13.5px; color: var(--text-soft); background: var(--surface);
+    border: 1px solid var(--line); border-left: 3px solid var(--violet);
+    border-radius: 14px; padding: 14px 16px; margin-bottom: 16px; line-height: 1.5;
   }
-  .score-explain b { color: var(--ink); }
+  .score-explain b { color: var(--text); }
 
-  /* Info-knop naast de check-titel */
-  .check-head { display: flex; align-items: center; gap: 8px; }
-  .info-btn {
-    flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%;
-    border: 1.5px solid var(--gold); background: transparent; color: var(--gold);
-    font-family: Georgia, serif; font-style: italic; font-weight: bold; font-size: 13px;
-    line-height: 1; cursor: pointer; padding: 0; display: inline-flex;
-    align-items: center; justify-content: center; transition: background .15s ease, color .15s ease;
+  /* Checks */
+  .checks { display: block; width: 100%; }
+  .check {
+    display: block; width: 100%; margin-bottom: 10px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 16px;
+    overflow: hidden;
   }
-  .info-btn:hover { background: var(--gold); color: #fff; }
-  /* Puls: trekt éénmalig kort de aandacht bij verschijnen, daarna rustig */
+  .check:last-child { margin-bottom: 0; }
+  .check-inner { display: flex; gap: 13px; padding: 15px 17px; }
+  .info-panel { clear: both; }
+  .dot { flex-shrink: 0; width: 11px; height: 11px; border-radius: 50%; margin-top: 6px; }
+  .dot.OK      { background: var(--mint); box-shadow: 0 0 10px rgba(52,226,176,.6); }
+  .dot.WARN    { background: var(--amber2); box-shadow: 0 0 10px rgba(255,182,56,.5); }
+  .dot.DANGER  { background: var(--coral); box-shadow: 0 0 10px rgba(255,93,108,.5); }
+  .dot.UNKNOWN { background: var(--muted); }
+  .check .body { flex: 1; }
+  .check-head { display: flex; align-items: center; gap: 8px; }
+  .check .body h4 { font-size: 15px; margin-bottom: 3px; color: var(--text); font-weight: 600; }
+  .check .body p { font-size: 13.5px; color: var(--text-soft); }
+
+  /* Info-knop met puls */
+  .info-btn {
+    flex-shrink: 0; width: 21px; height: 21px; border-radius: 50%;
+    border: 1.5px solid var(--violet); background: transparent; color: var(--violet);
+    font-family: Georgia, serif; font-style: italic; font-weight: bold; font-size: 13px;
+    line-height: 1; cursor: pointer; padding: 0; display: inline-flex; align-items: center; justify-content: center;
+    transition: background .15s ease, color .15s ease;
+  }
+  .info-btn:hover { background: var(--violet); color: #fff; }
   .info-btn.pulse { animation: infopulse 1.1s ease-out 3; }
   @keyframes infopulse {
-    0%   { box-shadow: 0 0 0 0 rgba(176,132,47,.55); }
-    70%  { box-shadow: 0 0 0 7px rgba(176,132,47,0); }
-    100% { box-shadow: 0 0 0 0 rgba(176,132,47,0); }
+    0%   { box-shadow: 0 0 0 0 rgba(139,107,255,.6); }
+    70%  { box-shadow: 0 0 0 8px rgba(139,107,255,0); }
+    100% { box-shadow: 0 0 0 0 rgba(139,107,255,0); }
   }
-  @media (prefers-reduced-motion: reduce) { .info-btn.pulse { animation: none; } }
+  @media (prefers-reduced-motion: reduce) { .info-btn.pulse { animation: none; } .verdict .score.count { animation: none; } .meter > span { transition: none; } }
 
-  /* Uitklap-paneel met de driedelige uitleg */
+  /* Info-paneel */
   .info-panel {
-    display: none; margin-top: 10px; padding: 12px 14px;
-    background: #faf8f3; border: 1px solid var(--line); border-radius: 8px;
-    font-size: 13.5px; line-height: 1.5;
+    display: none; margin-top: 11px; padding: 13px 15px;
+    background: var(--bg-2); border: 1px solid var(--line); border-radius: 12px;
+    font-size: 13px; line-height: 1.55;
   }
   .info-panel.open { display: block; animation: slidein .2s ease; }
   @keyframes slidein { from { opacity: 0; transform: translateY(-4px);} to {opacity:1; transform:none;} }
-  .info-panel p { margin-bottom: 7px; color: var(--ink-soft); }
+  .info-panel p { margin-bottom: 8px; color: var(--text-soft); }
   .info-panel p:last-child { margin-bottom: 0; }
-  .info-panel .tag-see   { font-weight: 700; color: var(--green); }
-  .info-panel .tag-blind { font-weight: 700; color: var(--red); }
-  .info-panel .tag-diy   { font-weight: 700; color: var(--ink); }
+  .info-panel .tag-see   { font-weight: 700; color: var(--mint); }
+  .info-panel .tag-blind { font-weight: 700; color: var(--coral); }
+  .info-panel .tag-diy   { font-weight: 700; color: var(--violet); }
 
+  /* Waarom-uitklap */
   details.why {
-    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
-    padding: 4px 18px; margin-bottom: 16px; font-family: -apple-system, sans-serif;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 16px;
+    padding: 4px 18px; margin: 16px 0;
   }
-  details.why summary {
-    cursor: pointer; padding: 12px 0; font-size: 15px; font-weight: 600; color: var(--ink);
-    list-style: none;
-  }
+  details.why summary { cursor: pointer; padding: 13px 0; font-size: 15px; font-weight: 600; color: var(--text); list-style: none; }
   details.why summary::-webkit-details-marker { display: none; }
-  details.why summary::before { content: "▸ "; color: var(--gold); font-weight: bold; }
-  details.why[open] summary::before { content: "▾ "; }
+  details.why summary::before { content: "＋ "; color: var(--mint); font-weight: bold; }
+  details.why[open] summary::before { content: "－ "; }
   details.why .why-body { padding: 2px 0 14px; }
-  details.why .why-body p { font-size: 14px; color: var(--muted); line-height: 1.55; margin-bottom: 10px; }
+  details.why .why-body p { font-size: 14px; color: var(--text-soft); line-height: 1.6; margin-bottom: 10px; }
 
-  .loading { font-family: -apple-system, sans-serif; text-align: center; color: var(--muted); padding: 30px; font-size: 15px; }
-  .err { font-family: -apple-system, sans-serif; background: var(--red-bg); border: 1px solid #e9d3d1; color: var(--red); border-radius: 10px; padding: 16px 18px; font-size: 14px; margin-bottom: 20px; }
+  .full-disclaimer {
+    font-size: 12.5px; color: var(--muted); background: var(--surface);
+    border: 1px solid var(--line); border-radius: 14px;
+    padding: 16px 18px; margin: 16px 0 44px; line-height: 1.55;
+  }
+  .full-disclaimer b { color: var(--coral); }
 
-  footer { font-family: -apple-system, sans-serif; text-align: center; color: var(--muted); font-size: 13px; padding: 20px 0 50px; border-top: 1px solid var(--line); }
-  @media (max-width: 560px) { .scan-row { flex-direction: column; } .logo { font-size: 32px; } .logo-mark { width: 42px; height: 42px; } }
+  .loading { text-align: center; color: var(--text-soft); padding: 30px; font-size: 15px; }
+  .err { background: rgba(255,93,108,.12); border: 1px solid var(--coral-dim); color: #ffb3ba; border-radius: 14px; padding: 15px 17px; font-size: 14px; margin-bottom: 20px; }
+
+  footer { text-align: center; color: var(--muted); font-size: 12.5px; padding: 22px 0 50px; border-top: 1px solid var(--line); }
+
+  /* Begrippenlijst-overlay */
+  .glossary-overlay { display: none; position: fixed; inset: 0; background: rgba(8,6,18,.7); backdrop-filter: blur(3px); z-index: 50; padding: 20px; overflow-y: auto; }
+  .glossary-overlay.open { display: block; }
+  .glossary-card {
+    max-width: 620px; margin: 24px auto; background: var(--bg-2);
+    border: 1px solid var(--line); border-radius: 22px;
+    box-shadow: 0 30px 80px rgba(0,0,0,.5); padding: 24px 24px 32px;
+  }
+  .glossary-card h2 { font-size: 24px; color: var(--text); margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; font-weight: 700; }
+  .glossary-close { border: none; background: transparent; font-size: 28px; cursor: pointer; color: var(--muted); line-height: 1; padding: 0 4px; }
+  .glossary-close:hover { color: var(--text); }
+  .glossary-intro { font-size: 13.5px; color: var(--muted); margin-bottom: 18px; line-height: 1.5; }
+  .term { border: 1px solid var(--line); background: var(--surface); border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; }
+  .term h3 { font-size: 15.5px; color: var(--mint); margin-bottom: 5px; font-weight: 600; }
+  .term p { font-size: 13.5px; color: var(--text-soft); line-height: 1.55; }
+
+  /* Share-knop + menu */
+  .share-wrap { margin: 16px 0; text-align: center; position: relative; }
+  .share-btn {
+    font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer;
+    padding: 14px 26px; border: none; border-radius: 14px;
+    background: linear-gradient(135deg, var(--violet), #6b8bff); color: #fff;
+    box-shadow: 0 6px 22px rgba(139,107,255,.4); transition: transform .1s ease, box-shadow .2s ease;
+    display: inline-flex; align-items: center; gap: 9px;
+  }
+  .share-btn:hover { transform: translateY(-1px); box-shadow: 0 9px 28px rgba(139,107,255,.5); }
+  .share-menu {
+    display: none; margin-top: 10px; background: var(--surface); border: 1px solid var(--line);
+    border-radius: 16px; padding: 8px; box-shadow: var(--shadow);
+  }
+  .share-menu.open { display: block; animation: slidein .2s ease; }
+  .share-menu button {
+    display: block; width: 100%; text-align: left; font-family: inherit; font-size: 14px;
+    padding: 13px 15px; border: none; background: transparent; color: var(--text); cursor: pointer;
+    border-radius: 10px; font-weight: 500;
+  }
+  .share-menu button:hover { background: var(--surface-2); color: var(--mint); }
+  .share-toast {
+    position: fixed; left: 50%; bottom: 30px; transform: translateX(-50%);
+    background: var(--mint); color: #0b1220; font-weight: 700; font-size: 14px;
+    padding: 12px 22px; border-radius: 12px; box-shadow: 0 8px 30px rgba(52,226,176,.5);
+    opacity: 0; pointer-events: none; transition: opacity .25s ease; z-index: 60;
+  }
+  .share-toast.show { opacity: 1; }
+
+  @media (max-width: 560px) {
+    .scan-row { flex-direction: column; }
+    .logo { font-size: 28px; }
+    .logo-mark { width: 40px; height: 40px; }
+    .verdict .score { font-size: 56px; }
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <div class="langbar">
+  <div class="topbar">
+    <button class="helpbtn" id="t-helpbtn" onclick="openGlossary()"></button>
     <div class="langswitch">
       <button id="lang-en" class="active" onclick="setLang('en')">EN</button>
       <button id="lang-nl" onclick="setLang('nl')">NL</button>
@@ -227,6 +321,17 @@
 
 </div>
 
+<!-- Begrippenlijst-overlay -->
+<div class="glossary-overlay" id="glossary" onclick="if(event.target===this)closeGlossary()">
+  <div class="glossary-card">
+    <h2><span id="t-gloss-title"></span><button class="glossary-close" onclick="closeGlossary()" aria-label="close">×</button></h2>
+    <div class="glossary-intro" id="t-gloss-intro"></div>
+    <div id="glossary-terms"></div>
+  </div>
+</div>
+
+<div class="share-toast" id="share-toast"></div>
+
 <script>
 // De app praat met ons eigen beveiligde tussenlaagje (/api/rpc), niet
 // rechtstreeks met Helius. De geheime sleutel zit veilig op de server.
@@ -235,166 +340,218 @@ const DEX = "https://api.dexscreener.com/latest/dex/tokens/";
 
 const T = {
   en: {
-    tag: "Check a Solana token for known rug-pull signals — before you buy in",
-    intro: "Paste a Solana token's mint address below. RugGuard checks a set of known technical risks: <strong>whether you can sell again, whether there's enough liquidity, whether the supply is spread out, and whether the creators can mint more or freeze your wallet.</strong> The result is a tool, not a judgement on whether you should invest.",
-    label: "Solana token mint address",
-    button: "Scan token",
-    scanning: "Scanning…",
-    strip: "Not financial advice · no guarantee of safety or profit · use at your own risk",
-    footer: "RugGuard analyses public on-chain data. A clean score is no guarantee — never invest more than you can afford to lose completely.",
-    loading: "Fetching on-chain data and analysing…",
+    tag: "Don't get rugged. Check any Solana coin in 10 seconds — before you buy in.",
+    intro: "New to this? No stress. Drop a coin's address below and we'll scan it for the most common traps in seconds — and explain every result like a friend would, no jargon. Stuck on a word? Tap \u201cWord list\u201d up top.",
+    label: "Paste the coin's address here",
+    button: "Check this coin",
+    scanning: "Checking\u2026",
+    strip: "Not financial advice \u00b7 no promise of safety or profit \u00b7 you decide, at your own risk",
+    footer: "RugGuard reads public blockchain data. A clean result is not a promise \u2014 never invest more than you can afford to lose completely.",
+    loading: "Reading the coin's data and checking\u2026",
     scoreLabel: "Risk score",
     scoreHint: "higher = riskier",
-    badAddr: "This doesn't look like a valid Solana address. A mint address is usually 32–44 characters long.",
-    rpcErr: "The public Solana server limits how many requests it accepts; wait a moment and try again.",
+    badAddr: "That doesn't look like a valid Solana coin address. It's usually a long string of 32\u201344 letters and numbers.",
+    rpcErr: "The free Solana server is busy right now; wait a moment and try again.",
     somethingWrong: "Something went wrong: ",
-    unknownToken: "Unknown token",
-    disclaimer: "<b>Read this before you invest.</b> RugGuard detects known technical risks, but it cannot see whether the hype fades, whether the market turns, or whether the creators have a subtler exit. A token that shows no red flags can still become completely worthless. This is not financial advice and no guarantee of safety or profit. Every decision is entirely at your own risk; the provider of RugGuard is not liable for any loss. Never invest more than you can afford to lose completely.",
-    scoreExplain: "<b>What this score means.</b> This is a quick safety check, not a verdict. A low-risk score means we didn't find the most common traps — it does NOT mean the token is safe or will make you money. Even a thorough check can't catch everything.",
+    unknownToken: "Unknown coin",
+    helpBtn: "\u2139 Word list",
+    shareBtn: "Share this",
+    shareResultLabel: "Share this result",
+    shareAppLabel: "Share the app",
+    shareCopied: "Copied! Paste it anywhere.",
+    shareResultText: function(name, score){ return "I just ran " + name + " through RugGuard \u2014 risk score " + score + "/100. Always check before you buy in \ud83d\udee1\ufe0f rugguard-check.netlify.app"; },
+    shareAppText: "Thinking about a Solana coin? Run a free 10-second safety check first \u2014 RugGuard shows the red flags before you buy in \ud83d\udee1\ufe0f rugguard-check.netlify.app",
+    disclaimer: "<b>Read this before you invest.</b> RugGuard spots common traps, but it can't see everything \u2014 the hype can fade, the market can turn, and some tricks are hidden. A coin with no red flags can still become worthless. This is not financial advice and no promise of safety or profit. You decide, entirely at your own risk; we are not liable for any loss. Never invest more than you can afford to lose completely.",
+    scoreExplain: "<b>What this score means.</b> This is a quick safety check, not a promise. A low score means we didn't find the most common traps \u2014 it does NOT mean the coin is safe or that you'll make money. Even a deep check can't catch everything.",
     whyTitle: "Why no check is ever 100% sure",
-    whyBody: "Think of RugGuard like a home inspection before you buy a house. A good inspector spots the obvious problems — a leaking roof, bad wiring, a cracked foundation — and that's incredibly useful. But they can't promise nothing will ever go wrong, and can't see every hidden issue behind the walls.\n\nA token check works the same way. We read what's visible on the blockchain and flag the known dangers. But we can't see the future, we can't read the creators' intentions, and clever scammers invent new tricks all the time. A clean result lowers your risk — it doesn't remove it.\n\nSo the rule is simple: use this as one tool among several, do your own research, and only ever invest money you can afford to lose completely.",
-    plainLabels: { see: "What we check", blind: "What we DON'T see", diy: "Check yourself" },
+    whyBody: "Think of RugGuard like having a house checked before you buy it. A good inspector spots the obvious problems \u2014 a leaking roof, bad wiring \u2014 and that's really useful. But they can't promise nothing will ever go wrong, and can't see every hidden issue behind the walls.\n\nChecking a coin works the same way. We read what's visible on the blockchain and flag the known dangers. But we can't see the future, we don't know the creators' plans, and scammers keep inventing new tricks. A clean result lowers your risk \u2014 it doesn't remove it.\n\nSo the rule is simple: use this as one helper among several, look into things yourself, and only ever invest money you can afford to lose completely.",
+    plainLabels: { see: "What we check", blind: "What we can't see", diy: "How to check it yourself" },
     plain: {
       mint: {
-        see:   "Whether the creators can still create new tokens right now.",
-        blind: "Whether they plan to, or will hand this power to someone else later — we only see the current on-chain state.",
-        diy:   "If minting is active, be very cautious. Prefer a project that has disabled it, or has a clear, credible reason it's still on."
+        see:   "Whether the creators can still make new coins right now.",
+        blind: "Whether they plan to, or will pass this power to someone else later \u2014 we only see how it's set right now.",
+        diy:   "Open the coin on a Solana blockchain explorer (a free website that shows everything about the coin). Paste the coin's address and look for \u201cMint Authority\u201d. If it says \u201cnone\u201d or is empty, no one can make extra coins \u2014 good. If there's an address there, they still can \u2014 be careful. [Easy to check yourself]"
       },
       freeze: {
-        see:   "Whether the creators can freeze wallets, which would stop you selling (a honeypot).",
-        blind: "Hidden contract tricks that block selling in other ways than the standard freeze setting.",
-        diy:   "If freezing is active, treat it as a strong warning. Try a tiny test sell before committing real money."
+        see:   "Whether the creators can lock your coins so you can't sell (a trap called a honeypot).",
+        blind: "Hidden tricks in the coin's code that block selling in other ways.",
+        diy:   "On the same explorer page, look for \u201cFreeze Authority\u201d. \u201cNone\u201d or empty means your coins can't be locked \u2014 good. An address means they can lock them \u2014 treat that as a strong warning. [Easy to check yourself]"
       },
       liq: {
-        see:   "How much money sits in the trading pool right now.",
-        blind: "Whether that liquidity is LOCKED or can be pulled away by the creators — our basic scan doesn't verify this yet.",
-        diy:   "Check on a liquidity locker or the token's page whether liquidity is locked or burned. Unlocked liquidity is a classic rug-pull setup."
+        see:   "How much money is available right now to buy and sell this coin.",
+        blind: "Whether that money is locked in place or can be pulled away by the creators \u2014 our quick check doesn't verify this yet.",
+        diy:   "Checking whether the money pool is truly locked means reading the coin's transactions \u2014 honestly hard when you're starting out. If you can't check it yourself, treat it as an unknown risk: start very small, or wait until you understand it. Not being sure is itself a reason to be careful. [Hard \u2014 be extra careful]"
       },
       hold: {
-        see:   "How much of the supply the 10 largest wallets hold.",
-        blind: "Whether several 'separate' wallets are secretly the same person (bundled insiders) — we count wallets, not owners.",
-        diy:   "Be extra careful if a few wallets hold a lot. On a block explorer, check whether top wallets are linked or funded together."
+        see:   "How much of all the coins the 10 biggest owners hold together.",
+        blind: "Whether several \u201cseparate\u201d owners are secretly the same person \u2014 we count wallets, not people.",
+        diy:   "On the explorer, open the \u201cHolders\u201d tab to see how much the biggest owners hold. If one or two hold a huge share, that's a warning. Telling whether they're secretly the same person is hard \u2014 if you can't judge it, treat high concentration as a reason to be careful. [Partly checkable]"
       },
       age: {
-        see:   "How long ago the token's trading pair was created.",
-        blind: "What happens next — a very new token is simply unproven, not automatically bad.",
-        diy:   "For brand-new tokens, wait and watch, or risk only a tiny amount. The first hours are where insiders exit onto newcomers."
+        see:   "How long ago this coin was created.",
+        blind: "What happens next \u2014 a brand-new coin is simply unproven, not automatically bad.",
+        diy:   "The coin's page shows when it was made. Very new (hours or days) is the riskiest moment, because the earliest people can sell onto newcomers. If it's brand new, risk only a small amount or wait. [Easy to check yourself]"
       },
       vol: {
-        see:   "How much was traded in the last 24 hours.",
-        blind: "Whether the volume is real or faked (wash trading) to look busy — our basic scan can't tell them apart yet.",
-        diy:   "Very low volume means it's hard to sell. On a brand-new token, high volume can be faked — check whether many different wallets trade, not just a few."
+        see:   "How much was bought and sold in the last 24 hours.",
+        blind: "Whether that trading is real or faked to look busy \u2014 our quick check can't tell them apart yet.",
+        diy:   "Very little trading means it's hard to sell later. Suspiciously high trading on a brand-new coin can be faked. If it looks too good for how new it is, be extra careful and don't rush. [Hard \u2014 be extra careful]"
       }
     },
     verdict: {
-      high: "High risk — multiple serious red flags. High chance of a trap.",
-      mid:  "Elevated risk — there are concerns. Only with money you can afford to lose completely.",
-      low:  "No serious technical red flags found. Note: this is not a guarantee."
+      high: "High risk \u2014 several serious warnings. Big chance this is a trap.",
+      mid:  "Higher risk \u2014 there are worries. Only with money you can afford to lose completely.",
+      low:  "We didn't find the common traps. Note: this is not a promise that it's safe."
     },
     checks: {
-      mintDanger:  ["Minting (mint authority)", "Active — the creators can mint new tokens and dilute your share."],
-      mintOk:      ["Minting (mint authority)", "Disabled — the supply cannot be inflated."],
-      mintUnknown: ["Minting (mint authority)", "Could not be retrieved."],
-      freezeDanger:  ["Wallet freezing (freeze authority)", "Active — the creators can freeze tokens, so you can't sell (honeypot risk)."],
-      freezeOk:      ["Wallet freezing (freeze authority)", "Disabled — your tokens cannot be frozen."],
-      freezeUnknown: ["Wallet freezing (freeze authority)", "Could not be retrieved."],
-      liqDanger:  function(v){ return ["Liquidity", "Very low ($" + v + "). Easy to manipulate and selling may stall."]; },
-      liqWarn:    function(v){ return ["Liquidity", "Low ($" + v + "). Be careful with larger amounts."]; },
-      liqOk:      function(v){ return ["Liquidity", "Reasonable ($" + v + ")."]; },
-      liqUnknown: ["Liquidity", "No trading pair found."],
-      volWarn:    function(v){ return ["Trading volume (24h)", "Very low ($" + v + "). Few buyers and sellers active."]; },
-      volOk:      function(v){ return ["Trading volume (24h)", "$" + v + " traded in 24 hours."]; },
-      volUnknown: ["Trading volume (24h)", "Unknown."],
-      ageDanger:  function(h){ return ["Age", "Extremely new (" + h + " hours). Highest risk; insiders are still early."]; },
-      ageWarn:    function(h){ return ["Age", "Very new (" + h + " hours). Still unproven."]; },
-      ageOk:      function(d){ return ["Age", d + " days old."]; },
-      ageUnknown: ["Age", "Creation date unknown."],
-      holdDanger:  function(p){ return ["Supply distribution", "The 10 largest wallets hold " + p + "%. They can crash the price."]; },
-      holdWarn:    function(p){ return ["Supply distribution", "The 10 largest wallets hold " + p + "%. Elevated risk."]; },
-      holdOk:      function(p){ return ["Supply distribution", "The 10 largest wallets hold " + p + "%. Reasonably spread out."]; },
-      holdUnknown: ["Supply distribution", "Could not retrieve holders."]
-    }
+      mintDanger:  ["Can they make new coins?", "Yes \u2014 the creators can still make new coins, which can lower the value of yours."],
+      mintOk:      ["Can they make new coins?", "No \u2014 no extra coins can be made. Good sign."],
+      mintUnknown: ["Can they make new coins?", "We couldn't check this."],
+      freezeDanger:  ["Can they lock your coins?", "Yes \u2014 the creators can lock coins, so you might not be able to sell (a honeypot)."],
+      freezeOk:      ["Can they lock your coins?", "No \u2014 your coins can't be locked. Good sign."],
+      freezeUnknown: ["Can they lock your coins?", "We couldn't check this."],
+      liqDanger:  function(v){ return ["Is there enough money to sell?", "Very little ($" + v + "). Easy to manipulate, and selling may get stuck."]; },
+      liqWarn:    function(v){ return ["Is there enough money to sell?", "A bit low ($" + v + "). Be careful with larger amounts."]; },
+      liqOk:      function(v){ return ["Is there enough money to sell?", "Reasonable ($" + v + ")."]; },
+      liqUnknown: ["Is there enough money to sell?", "No trading pair found."],
+      volWarn:    function(v){ return ["How much is being traded?", "Very little ($" + v + " in 24h). Few buyers and sellers."]; },
+      volOk:      function(v){ return ["How much is being traded?", "$" + v + " traded in 24 hours."]; },
+      volUnknown: ["How much is being traded?", "Unknown."],
+      ageDanger:  function(h){ return ["How new is this coin?", "Extremely new (" + h + " hours). The riskiest moment \u2014 the earliest owners are still in."]; },
+      ageWarn:    function(h){ return ["How new is this coin?", "Very new (" + h + " hours). Still unproven."]; },
+      ageOk:      function(d){ return ["How new is this coin?", d + " days old."]; },
+      ageUnknown: ["How new is this coin?", "Creation date unknown."],
+      holdDanger:  function(p){ return ["Who owns the coins?", "The 10 biggest owners hold " + p + "%. They could crash the price."]; },
+      holdWarn:    function(p){ return ["Who owns the coins?", "The 10 biggest owners hold " + p + "%. Higher risk."]; },
+      holdOk:      function(p){ return ["Who owns the coins?", "The 10 biggest owners hold " + p + "%. Reasonably spread out."]; },
+      holdUnknown: ["Who owns the coins?", "Couldn't load the owners."]
+    },
+    glossTitle: "Word list",
+    glossIntro: "Every tricky word from the app, explained in plain language. Don't know a word? Look it up here \u2014 not knowing is just the start of learning.",
+    glossary: [
+      ["Coin / token", "A unit of value on the blockchain. A \u201cmemecoin\u201d is a coin made mostly for fun or hype, often with no real use behind it."],
+      ["Blockchain", "A public digital record that stores every transaction. Anyone can look; no one can secretly change the past. Solana is one such blockchain."],
+      ["Wallet", "Your digital wallet holds your coins. It has an address others can see, and a secret key only you should have."],
+      ["Coin address", "The unique address of a coin on the blockchain \u2014 like an ID card for that coin. You paste it into RugGuard to check it."],
+      ["Rug pull", "A scam where the creators suddenly pull out all the money or dump their coins, leaving yours worthless. RugGuard is named after guarding against this."],
+      ["Liquidity", "The pool of money available to buy and sell a coin. Lots means you can sell easily; very little means you might get stuck unable to sell."],
+      ["Locked / burned liquidity", "\u201cLocked\u201d means the money pool is held for a time so creators can't just take it. \u201cBurned\u201d means it's gone from their control for good. Both protect buyers."],
+      ["Making new coins (mint)", "The power to create new coins. If creators can still do it, they can make more and lower the value of yours. Safer coins have this switched off."],
+      ["Locking coins (freeze)", "The power to lock wallets so people can't sell. If creators can do it, they can trap you with coins you can't get rid of."],
+      ["Honeypot", "A trap coin: you can buy it, but a hidden trick stops you from ever selling. Money goes in and can't come out."],
+      ["Supply", "The total number of coins that exist. If a few owners hold most of them, they can crash the price by selling all at once."],
+      ["Blockchain explorer", "A free website that shows everything about a coin on the blockchain: who owns it, its settings, its history. You use it to check things yourself."],
+      ["Insiders", "People close to the coin (creators and friends) who often hold a lot early. They can sell onto newcomers and crash the price."],
+      ["Fake trading (wash trading)", "Fake activity where someone buys and sells to themselves to make a coin look popular, tricking others into buying."],
+      ["DYOR", "\u201cDo Your Own Research\u201d \u2014 always look into things yourself before investing. No tool or tip replaces your own careful check."]
+    ]
   },
   nl: {
-    tag: "Controleer een Solana-token op bekende rug-pull-signalen — voordat je instapt",
-    intro: "Plak hieronder het adres (mint address) van een Solana-token. RugGuard checkt een aantal bekende technische risico's: <strong>kun je weer verkopen, staat er genoeg liquiditeit, zit de voorraad verspreid, en kunnen de makers bijdrukken of je wallet bevriezen.</strong> Het resultaat is een hulpmiddel, geen oordeel over of je moet investeren.",
-    label: "Solana token mint-adres",
-    button: "Scan token",
-    scanning: "Bezig…",
-    strip: "Geen financieel advies · geen garantie op veiligheid of winst · gebruik op eigen risico",
-    footer: "RugGuard analyseert publieke on-chain data. Een schone score is geen garantie — investeer nooit meer dan je volledig kunt missen.",
-    loading: "On-chain data ophalen en analyseren…",
+    tag: "Laat je niet ruggen. Check elke Solana-munt in 10 seconden \u2014 voordat je instapt.",
+    intro: "Nieuw hierin? Geen stress. Plak hieronder het adres van een munt, dan scannen we hem in seconden op de bekendste trucs \u2014 en leggen we elk resultaat uit zoals een vriend zou doen, zonder jargon. Loop je vast op een woord? Tik bovenaan op \u201cWoordenlijst\u201d.",
+    label: "Plak hier het adres van de munt",
+    button: "Check deze munt",
+    scanning: "Bezig met checken\u2026",
+    strip: "Geen financieel advies \u00b7 geen belofte van veiligheid of winst \u00b7 jij beslist, op eigen risico",
+    footer: "RugGuard leest openbare blockchain-gegevens. Een schoon resultaat is geen belofte \u2014 investeer nooit meer dan je volledig kunt missen.",
+    loading: "Gegevens van de munt lezen en checken\u2026",
     scoreLabel: "Risicoscore",
     scoreHint: "hoger = risicovoller",
-    badAddr: "Dit lijkt geen geldig Solana-adres. Een mint-adres is doorgaans 32–44 tekens lang.",
-    rpcErr: "De publieke Solana-server heeft een limiet op verzoeken; wacht even en probeer opnieuw.",
+    badAddr: "Dat lijkt geen geldig Solana-muntadres. Het is meestal een lange reeks van 32\u201344 letters en cijfers.",
+    rpcErr: "De gratis Solana-server is nu druk; wacht even en probeer opnieuw.",
     somethingWrong: "Er ging iets mis: ",
-    unknownToken: "Onbekende token",
-    disclaimer: "<b>Lees dit voordat je investeert.</b> RugGuard spoort bekende technische risico's op, maar kan niet zien of de hype wegvalt, of de markt keert, of de makers een subtielere exit hebben. Een token die geen rode vlaggen toont, kan alsnog volledig waardeloos worden. Dit is geen financieel advies en geen garantie op veiligheid of winst. Elke beslissing neem je volledig op eigen risico; de aanbieder van RugGuard is niet aansprakelijk voor enig verlies. Investeer nooit meer dan je volledig kunt missen.",
-    scoreExplain: "<b>Wat deze score betekent.</b> Dit is een snelle veiligheidscheck, geen eindoordeel. Een lage risicoscore betekent dat we de bekendste vallen niet vonden — het betekent NIET dat de token veilig is of je geld oplevert. Zelfs een grondige check vangt niet alles.",
-    whyTitle: "Waarom geen enkele scan 100% zeker is",
-    whyBody: "Zie RugGuard als een bouwkundige keuring voordat je een huis koopt. Een goede keurder ziet de duidelijke problemen — een lekkend dak, slechte bedrading, een gebarsten fundering — en dat is enorm nuttig. Maar hij kan niet beloven dat er nooit iets misgaat, en ziet niet elk verborgen gebrek achter de muren.\n\nEen token-check werkt net zo. Wij lezen wat zichtbaar is op de blockchain en signaleren de bekende gevaren. Maar we kunnen niet in de toekomst kijken, we kennen de bedoelingen van de makers niet, en slimme oplichters bedenken steeds nieuwe trucs. Een schone uitslag verlaagt je risico — het neemt het niet weg.\n\nDe regel is dus simpel: gebruik dit als één hulpmiddel naast andere, doe je eigen onderzoek, en investeer alleen geld dat je volledig kunt missen.",
-    plainLabels: { see: "Wat we checken", blind: "Wat we NIET zien", diy: "Zelf checken" },
+    unknownToken: "Onbekende munt",
+    helpBtn: "\u2139 Woordenlijst",
+    shareBtn: "Delen",
+    shareResultLabel: "Deel dit resultaat",
+    shareAppLabel: "Deel de app",
+    shareCopied: "Gekopieerd! Plak het waar je wilt.",
+    shareResultText: function(name, score){ return "Ik checkte " + name + " even met RugGuard \u2014 risicoscore " + score + "/100. Altijd checken voordat je instapt \ud83d\udee1\ufe0f rugguard-check.netlify.app"; },
+    shareAppText: "Ga je iets doen met een Solana-munt? Doe eerst een gratis check van 10 seconden \u2014 RugGuard laat de rode vlaggen zien voordat je instapt \ud83d\udee1\ufe0f rugguard-check.netlify.app",
+    disclaimer: "<b>Lees dit voordat je investeert.</b> RugGuard vindt veelvoorkomende trucs, maar kan niet alles zien \u2014 de hype kan wegvallen, de markt kan keren, en sommige trucs zijn verborgen. Een munt zonder rode vlaggen kan alsnog waardeloos worden. Dit is geen financieel advies en geen belofte van veiligheid of winst. Jij beslist, volledig op eigen risico; wij zijn niet aansprakelijk voor verlies. Investeer nooit meer dan je volledig kunt missen.",
+    scoreExplain: "<b>Wat deze score betekent.</b> Dit is een snelle veiligheidscheck, geen belofte. Een lage score betekent dat we de bekendste trucs niet vonden \u2014 het betekent NIET dat de munt veilig is of dat je geld gaat verdienen. Zelfs een diepe check vangt niet alles.",
+    whyTitle: "Waarom geen enkele check 100% zeker is",
+    whyBody: "Zie RugGuard als een huis laten keuren voordat je het koopt. Een goede keurder ziet de duidelijke problemen \u2014 een lekkend dak, slechte bedrading \u2014 en dat is echt nuttig. Maar hij kan niet beloven dat er nooit iets misgaat, en ziet niet elk verborgen gebrek achter de muren.\n\nEen munt checken werkt net zo. We lezen wat zichtbaar is op de blockchain en wijzen de bekende gevaren aan. Maar we kunnen niet in de toekomst kijken, we kennen de plannen van de makers niet, en oplichters bedenken steeds nieuwe trucs. Een schoon resultaat verlaagt je risico \u2014 het neemt het niet weg.\n\nDe regel is dus simpel: gebruik dit als \u00e9\u00e9n hulpje naast andere, zoek zelf dingen uit, en investeer alleen geld dat je volledig kunt missen.",
+    plainLabels: { see: "Wat we checken", blind: "Wat we niet kunnen zien", diy: "Zo check je het zelf" },
     plain: {
       mint: {
-        see:   "Of de makers op dit moment nog nieuwe tokens kunnen aanmaken.",
-        blind: "Of ze dat van plan zijn, of deze macht later doorgeven — we zien alleen de huidige stand op de blockchain.",
-        diy:   "Staat bijdrukken aan, wees dan zeer voorzichtig. Kies liever een project dat het heeft uitgeschakeld, of een duidelijke, geloofwaardige reden dat het nog aanstaat."
+        see:   "Of de makers nu nog nieuwe munten kunnen maken.",
+        blind: "Of ze dat van plan zijn, of deze macht later doorgeven \u2014 we zien alleen hoe het nu ingesteld staat.",
+        diy:   "Open de munt op een Solana blockchain explorer (een gratis website die alles over de munt laat zien). Plak het adres van de munt en zoek naar \u201cMint Authority\u201d. Staat daar \u201cnone\u201d of is het leeg, dan kan niemand extra munten maken \u2014 goed. Staat er een adres, dan kan het nog wel \u2014 wees voorzichtig. [Zelf te checken]"
       },
       freeze: {
-        see:   "Of de makers wallets kunnen bevriezen, waardoor je niet meer kunt verkopen (een honeypot).",
-        blind: "Verborgen contract-trucs die verkopen op andere manieren blokkeren dan de standaard bevriesknop.",
-        diy:   "Staat bevriezen aan, zie dat als een sterke waarschuwing. Probeer een kleine testverkoop voordat je echt geld inlegt."
+        see:   "Of de makers je munten op slot kunnen zetten zodat je niet kunt verkopen (een val die honeypot heet).",
+        blind: "Verborgen trucs in de code van de munt die verkopen op andere manieren blokkeren.",
+        diy:   "Zoek op dezelfde explorer-pagina naar \u201cFreeze Authority\u201d. \u201cNone\u201d of leeg betekent dat je munten niet op slot kunnen \u2014 goed. Een adres betekent dat ze het wel kunnen \u2014 zie dat als een sterke waarschuwing. [Zelf te checken]"
       },
       liq: {
-        see:   "Hoeveel geld er nu in de handelspool zit.",
-        blind: "Of die liquiditeit VASTGEZET is of kan worden weggetrokken door de makers — onze basisscan controleert dit nog niet.",
-        diy:   "Controleer via een liquidity-locker of de tokenpagina of de liquiditeit vastgezet of verbrand is. Losse liquiditeit is een klassieke rug-pull-opzet."
+        see:   "Hoeveel geld er nu beschikbaar is om deze munt te kopen en verkopen.",
+        blind: "Of dat geld vastgezet is of kan worden weggehaald door de makers \u2014 onze snelle check controleert dit nog niet.",
+        diy:   "Checken of de geldpot echt vastgezet is, betekent de transacties van de munt lezen \u2014 eerlijk gezegd lastig als je begint. Kun je het niet zelf checken, behandel het dan als een onbekend risico: begin heel klein, of wacht tot je het begrijpt. Twijfel is op zichzelf al een reden om voorzichtig te zijn. [Lastig \u2014 wees extra voorzichtig]"
       },
       hold: {
-        see:   "Hoeveel van de voorraad de 10 grootste wallets bezitten.",
-        blind: "Of meerdere 'losse' wallets stiekem dezelfde persoon zijn (gebundelde insiders) — we tellen wallets, geen eigenaren.",
-        diy:   "Wees extra voorzichtig als enkele wallets veel bezitten. Kijk op een block explorer of de topwallets gekoppeld zijn of samen gevuld."
+        see:   "Hoeveel van alle munten de 10 grootste eigenaren samen bezitten.",
+        blind: "Of meerdere \u201closse\u201d eigenaren stiekem dezelfde persoon zijn \u2014 we tellen wallets, geen mensen.",
+        diy:   "Open op de explorer het tabblad \u201cHolders\u201d om te zien hoeveel de grootste eigenaren bezitten. Heeft \u00e9\u00e9n of twee een enorm deel, dan is dat een waarschuwing. Of ze stiekem dezelfde persoon zijn, is lastig te zien \u2014 kun je dat niet beoordelen, zie hoge concentratie dan als reden om voorzichtig te zijn. [Deels te checken]"
       },
       age: {
-        see:   "Hoe lang geleden het handelspaar van de token is aangemaakt.",
-        blind: "Wat er hierna gebeurt — een zeer nieuwe token is simpelweg onbewezen, niet automatisch slecht.",
-        diy:   "Bij gloednieuwe tokens: wacht en kijk, of riskeer maar een klein bedrag. In de eerste uren stappen insiders uit ten koste van nieuwkomers."
+        see:   "Hoe lang geleden deze munt is gemaakt.",
+        blind: "Wat er hierna gebeurt \u2014 een gloednieuwe munt is simpelweg onbewezen, niet automatisch slecht.",
+        diy:   "De pagina van de munt laat zien wanneer hij is gemaakt. Zeer nieuw (uren of dagen) is het risicovolste moment, want de eersten kunnen verkopen aan nieuwkomers. Is het gloednieuw, riskeer dan maar een klein bedrag of wacht. [Zelf te checken]"
       },
       vol: {
-        see:   "Hoeveel er in de laatste 24 uur is verhandeld.",
-        blind: "Of dat volume echt is of nep (wash trading) om druk te lijken — onze basisscan kan dat nog niet onderscheiden.",
-        diy:   "Erg laag volume betekent moeilijk verkopen. Bij een gloednieuwe token kan hoog volume nep zijn — kijk of veel verschillende wallets handelen, niet slechts een paar."
+        see:   "Hoeveel er in de laatste 24 uur is gekocht en verkocht.",
+        blind: "Of die handel echt is of nep om druk te lijken \u2014 onze snelle check kan dat nog niet onderscheiden.",
+        diy:   "Erg weinig handel betekent dat je later moeilijk kunt verkopen. Verdacht veel handel op een gloednieuwe munt kan nep zijn. Ziet het er te mooi uit voor hoe nieuw het is, wees dan extra voorzichtig en haast je niet. [Lastig \u2014 wees extra voorzichtig]"
       }
     },
     verdict: {
-      high: "Hoog risico — meerdere ernstige rode vlaggen. Grote kans op een val.",
-      mid:  "Verhoogd risico — er zijn zorgen. Alleen met geld dat je volledig kunt missen.",
-      low:  "Geen ernstige technische rode vlaggen gevonden. Let op: dit is geen garantie."
+      high: "Hoog risico \u2014 meerdere ernstige waarschuwingen. Grote kans dat dit een val is.",
+      mid:  "Verhoogd risico \u2014 er zijn zorgen. Alleen met geld dat je volledig kunt missen.",
+      low:  "We vonden de bekende trucs niet. Let op: dit is geen belofte dat het veilig is."
     },
     checks: {
-      mintDanger:  ["Bijdrukken (mint authority)", "Actief — de makers kunnen nieuwe tokens aanmaken en jouw aandeel verwateren."],
-      mintOk:      ["Bijdrukken (mint authority)", "Uitgeschakeld — de voorraad kan niet worden bijgedrukt."],
-      mintUnknown: ["Bijdrukken (mint authority)", "Kon niet worden opgehaald."],
-      freezeDanger:  ["Wallet bevriezen (freeze authority)", "Actief — de makers kunnen tokens bevriezen, waardoor je niet kunt verkopen (honeypot-risico)."],
-      freezeOk:      ["Wallet bevriezen (freeze authority)", "Uitgeschakeld — je tokens kunnen niet worden bevroren."],
-      freezeUnknown: ["Wallet bevriezen (freeze authority)", "Kon niet worden opgehaald."],
-      liqDanger:  function(v){ return ["Liquiditeit", "Zeer laag ($" + v + "). Makkelijk te manipuleren en verkopen kan vastlopen."]; },
-      liqWarn:    function(v){ return ["Liquiditeit", "Laag ($" + v + "). Wees voorzichtig met grotere bedragen."]; },
-      liqOk:      function(v){ return ["Liquiditeit", "Redelijk ($" + v + ")."]; },
-      liqUnknown: ["Liquiditeit", "Geen handelspaar gevonden."],
-      volWarn:    function(v){ return ["Handelsvolume (24u)", "Erg laag ($" + v + "). Weinig kopers en verkopers actief."]; },
-      volOk:      function(v){ return ["Handelsvolume (24u)", "$" + v + " verhandeld in 24 uur."]; },
-      volUnknown: ["Handelsvolume (24u)", "Onbekend."],
-      ageDanger:  function(h){ return ["Leeftijd", "Extreem nieuw (" + h + " uur). Hoogste risico; insiders zitten er nog vroeg in."]; },
-      ageWarn:    function(h){ return ["Leeftijd", "Zeer nieuw (" + h + " uur). Nog onbewezen."]; },
-      ageOk:      function(d){ return ["Leeftijd", d + " dagen oud."]; },
-      ageUnknown: ["Leeftijd", "Aanmaakdatum onbekend."],
-      holdDanger:  function(p){ return ["Spreiding van de voorraad", "De 10 grootste wallets bezitten " + p + "%. Zij kunnen de prijs laten instorten."]; },
-      holdWarn:    function(p){ return ["Spreiding van de voorraad", "De 10 grootste wallets bezitten " + p + "%. Verhoogd risico."]; },
-      holdOk:      function(p){ return ["Spreiding van de voorraad", "De 10 grootste wallets bezitten " + p + "%. Redelijk verspreid."]; },
-      holdUnknown: ["Spreiding van de voorraad", "Kon houders niet ophalen."]
-    }
+      mintDanger:  ["Kunnen ze nieuwe munten maken?", "Ja \u2014 de makers kunnen nog nieuwe munten maken, wat de waarde van die van jou kan verlagen."],
+      mintOk:      ["Kunnen ze nieuwe munten maken?", "Nee \u2014 er kunnen geen extra munten bij. Goed teken."],
+      mintUnknown: ["Kunnen ze nieuwe munten maken?", "Dit konden we niet checken."],
+      freezeDanger:  ["Kunnen ze je munten op slot zetten?", "Ja \u2014 de makers kunnen munten op slot zetten, dus misschien kun je niet verkopen (een honeypot)."],
+      freezeOk:      ["Kunnen ze je munten op slot zetten?", "Nee \u2014 je munten kunnen niet op slot. Goed teken."],
+      freezeUnknown: ["Kunnen ze je munten op slot zetten?", "Dit konden we niet checken."],
+      liqDanger:  function(v){ return ["Is er genoeg geld om te verkopen?", "Erg weinig ($" + v + "). Makkelijk te manipuleren, en verkopen kan vastlopen."]; },
+      liqWarn:    function(v){ return ["Is er genoeg geld om te verkopen?", "Wat laag ($" + v + "). Wees voorzichtig met grotere bedragen."]; },
+      liqOk:      function(v){ return ["Is er genoeg geld om te verkopen?", "Redelijk ($" + v + ")."]; },
+      liqUnknown: ["Is er genoeg geld om te verkopen?", "Geen handelspaar gevonden."],
+      volWarn:    function(v){ return ["Hoeveel wordt er verhandeld?", "Erg weinig ($" + v + " in 24u). Weinig kopers en verkopers."]; },
+      volOk:      function(v){ return ["Hoeveel wordt er verhandeld?", "$" + v + " verhandeld in 24 uur."]; },
+      volUnknown: ["Hoeveel wordt er verhandeld?", "Onbekend."],
+      ageDanger:  function(h){ return ["Hoe nieuw is deze munt?", "Extreem nieuw (" + h + " uur). Het risicovolste moment \u2014 de eerste eigenaren zitten er nog in."]; },
+      ageWarn:    function(h){ return ["Hoe nieuw is deze munt?", "Zeer nieuw (" + h + " uur). Nog onbewezen."]; },
+      ageOk:      function(d){ return ["Hoe nieuw is deze munt?", d + " dagen oud."]; },
+      ageUnknown: ["Hoe nieuw is deze munt?", "Aanmaakdatum onbekend."],
+      holdDanger:  function(p){ return ["Wie bezit de munten?", "De 10 grootste eigenaren bezitten " + p + "%. Zij kunnen de prijs laten instorten."]; },
+      holdWarn:    function(p){ return ["Wie bezit de munten?", "De 10 grootste eigenaren bezitten " + p + "%. Hoger risico."]; },
+      holdOk:      function(p){ return ["Wie bezit de munten?", "De 10 grootste eigenaren bezitten " + p + "%. Redelijk verspreid."]; },
+      holdUnknown: ["Wie bezit de munten?", "Kon de eigenaren niet laden."]
+    },
+    glossTitle: "Woordenlijst",
+    glossIntro: "Elk lastig woord uit de app, uitgelegd in gewone taal. Ken je een woord niet? Zoek het hier op \u2014 iets niet weten is gewoon het begin van leren.",
+    glossary: [
+      ["Munt / token", "Een eenheid van waarde op de blockchain. Een \u201cmemecoin\u201d is een munt die vooral voor de lol of hype is gemaakt, vaak zonder echt nut erachter."],
+      ["Blockchain", "Een openbaar digitaal register dat elke transactie bewaart. Iedereen kan kijken; niemand kan het verleden stiekem veranderen. Solana is zo'n blockchain."],
+      ["Wallet / portemonnee", "Je digitale portemonnee bewaart je munten. Hij heeft een adres dat anderen kunnen zien, en een geheime sleutel die alleen jij mag hebben."],
+      ["Muntadres", "Het unieke adres van een munt op de blockchain \u2014 als een identiteitsbewijs van die munt. Je plakt het in RugGuard om te checken."],
+      ["Rug pull", "Een oplichttruc waarbij de makers plots al het geld weghalen of hun munten dumpen, zodat die van jou waardeloos worden. RugGuard is genoemd naar het beschermen hiertegen."],
+      ["Liquiditeit", "De pot met geld die beschikbaar is om een munt te kopen en verkopen. Veel betekent makkelijk verkopen; heel weinig betekent dat je vast kunt komen te zitten."],
+      ["Vastgezette / verbrande liquiditeit", "\u201cVastgezet\u201d betekent dat de geldpot een tijd op slot zit zodat de makers hem niet zomaar kunnen pakken. \u201cVerbrand\u201d betekent voorgoed uit hun macht. Allebei beschermen kopers."],
+      ["Nieuwe munten maken (mint)", "De macht om nieuwe munten te maken. Kunnen de makers het nog, dan kunnen ze meer maken en de waarde van die van jou verlagen. Veiliger munten hebben dit uit."],
+      ["Munten op slot zetten (freeze)", "De macht om wallets op slot te zetten zodat mensen niet kunnen verkopen. Kunnen de makers het, dan kunnen ze je opsluiten met munten die je niet kwijt kunt."],
+      ["Honeypot", "Een val-munt: je kunt hem kopen, maar een verborgen truc zorgt dat je nooit kunt verkopen. Geld gaat erin en kan er niet meer uit."],
+      ["Voorraad / supply", "Het totale aantal munten dat bestaat. Als een paar eigenaren het grootste deel hebben, kunnen zij de prijs laten instorten door alles tegelijk te verkopen."],
+      ["Blockchain explorer", "Een gratis website die alles over een munt op de blockchain laat zien: wie het bezit, de instellingen, de geschiedenis. Je gebruikt hem om zelf dingen te checken."],
+      ["Insiders", "Mensen dicht bij de munt (makers en vrienden) die er vaak vroeg veel van bezitten. Ze kunnen verkopen aan nieuwkomers en de prijs laten instorten."],
+      ["Nephandel (wash trading)", "Nepactiviteit waarbij iemand aan zichzelf koopt en verkoopt om een munt populair te laten lijken, zodat anderen misleid worden om te kopen."],
+      ["DYOR", "\u201cDo Your Own Research\u201d \u2014 zoek altijd zelf dingen uit voordat je investeert. Geen tool of tip vervangt je eigen zorgvuldige controle."]
+    ]
   }
 };
 
@@ -418,6 +575,73 @@ function applyStaticText() {
   document.getElementById("go").textContent = t.button;
   document.getElementById("t-strip").textContent = t.strip;
   document.getElementById("t-footer").textContent = t.footer;
+  document.getElementById("t-helpbtn").textContent = t.helpBtn;
+  document.getElementById("t-gloss-title").textContent = t.glossTitle;
+  document.getElementById("t-gloss-intro").textContent = t.glossIntro;
+  renderGlossary();
+}
+
+// Begrippenlijst vullen en tonen/verbergen
+function renderGlossary() {
+  const t = T[lang];
+  const box = document.getElementById("glossary-terms");
+  box.innerHTML = t.glossary.map(function(pair){
+    return '<div class="term"><h3>' + escapeHtml(pair[0]) + '</h3><p>' + escapeHtml(pair[1]) + '</p></div>';
+  }).join("");
+}
+function openGlossary() {
+  renderGlossary();
+  document.getElementById("glossary").classList.add("open");
+}
+function closeGlossary() {
+  document.getElementById("glossary").classList.remove("open");
+}
+
+// Deel-menu openen/sluiten
+function toggleShare() {
+  var m = document.getElementById("share-menu");
+  if (m) m.classList.toggle("open");
+}
+
+// Delen: kiest tussen het resultaat of de app zelf
+function doShare(what) {
+  var t = T[lang];
+  var text;
+  if (what === "result" && lastResult) {
+    var name = lastResult.name || t.unknownToken;
+    text = t.shareResultText(name, lastResult.score);
+  } else {
+    text = t.shareAppText;
+  }
+  var menu = document.getElementById("share-menu");
+  if (menu) menu.classList.remove("open");
+
+  // Gebruik de native deel-functie van de telefoon als die er is; anders kopieer naar klembord
+  if (navigator.share) {
+    navigator.share({ text: text }).catch(function(){ /* gebruiker annuleerde; niets doen */ });
+  } else if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function(){ showToast(t.shareCopied); })
+      .catch(function(){ fallbackCopy(text, t.shareCopied); });
+  } else {
+    fallbackCopy(text, t.shareCopied);
+  }
+}
+
+function fallbackCopy(text, msg) {
+  try {
+    var ta = document.createElement("textarea");
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    document.execCommand("copy"); document.body.removeChild(ta);
+    showToast(msg);
+  } catch (e) { /* stilletjes negeren */ }
+}
+
+function showToast(msg) {
+  var el = document.getElementById("share-toast");
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.add("show");
+  setTimeout(function(){ el.classList.remove("show"); }, 2200);
 }
 
 async function rpc(method, params) {
@@ -545,11 +769,13 @@ function render(r) {
         '</div>';
     }
     return '<div class="check">' +
-        '<div class="dot ' + c.level + '"></div>' +
-        '<div class="body">' +
-          '<div class="check-head"><h4>' + escapeHtml(loc[0]) + '</h4>' + infoBtn + '</div>' +
-          '<p>' + escapeHtml(loc[1]) + '</p>' +
-          infoPanel +
+        '<div class="check-inner">' +
+          '<div class="dot ' + c.level + '"></div>' +
+          '<div class="body">' +
+            '<div class="check-head"><h4>' + escapeHtml(loc[0]) + '</h4>' + infoBtn + '</div>' +
+            '<p>' + escapeHtml(loc[1]) + '</p>' +
+            infoPanel +
+          '</div>' +
         '</div>' +
       '</div>';
   }).join("");
@@ -559,15 +785,27 @@ function render(r) {
     '<div class="verdict ' + r.band + '">' +
       '<div class="token-name">' + escapeHtml(name) + ' (' + escapeHtml(r.symbol) + ')</div>' +
       '<div class="score-line"><span>' + t.scoreLabel + '</span><span>' + t.scoreHint + '</span></div>' +
-      '<div class="score">' + r.score + '<span style="font-size:22px;opacity:.7">/100</span></div>' +
+      '<div class="score count">' + r.score + '<span style="font-size:22px;opacity:.7">/100</span></div>' +
+      '<div class="meter"><span style="width:0%"></span></div>' +
       '<div class="headline">' + t.verdict[r.band] + '</div>' +
     '</div>' +
     '<div class="score-explain">' + t.scoreExplain + '</div>' +
     '<div class="checks">' + rows + '</div>' +
+    '<div class="share-wrap">' +
+      '<button class="share-btn" onclick="toggleShare()">\u2197 ' + escapeHtml(t.shareBtn) + '</button>' +
+      '<div class="share-menu" id="share-menu">' +
+        '<button onclick="doShare(\'result\')">' + escapeHtml(t.shareResultLabel) + '</button>' +
+        '<button onclick="doShare(\'app\')">' + escapeHtml(t.shareAppLabel) + '</button>' +
+      '</div>' +
+    '</div>' +
     '<details class="why"><summary>' + escapeHtml(t.whyTitle) + '</summary>' +
       '<div class="why-body">' + t.whyBody.split("\n\n").map(function(par){ return '<p>' + escapeHtml(par) + '</p>'; }).join("") + '</div>' +
     '</details>' +
     '<div class="full-disclaimer">' + t.disclaimer + '</div>';
+
+  // meterbalk vullen tot de risicoscore (klein uitstel zodat de overgang zichtbaar is)
+  var bar = out.querySelector(".meter > span");
+  if (bar) { setTimeout(function(){ bar.style.width = r.score + "%"; }, 60); }
 
   // stop de puls zodra de gebruiker gescrold/geklikt heeft, zodat het niet blijft trekken
   // (de puls-animatie speelt sowieso maar kort; dit is een extra rust-maatregel)

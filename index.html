@@ -116,6 +116,60 @@
   }
   .full-disclaimer b { color: var(--red); }
 
+  .score-explain {
+    font-family: -apple-system, sans-serif; font-size: 14px; color: var(--ink-soft);
+    background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--gold);
+    border-radius: 8px; padding: 14px 16px; margin-bottom: 16px; line-height: 1.5;
+  }
+  .score-explain b { color: var(--ink); }
+
+  /* Info-knop naast de check-titel */
+  .check-head { display: flex; align-items: center; gap: 8px; }
+  .info-btn {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%;
+    border: 1.5px solid var(--gold); background: transparent; color: var(--gold);
+    font-family: Georgia, serif; font-style: italic; font-weight: bold; font-size: 13px;
+    line-height: 1; cursor: pointer; padding: 0; display: inline-flex;
+    align-items: center; justify-content: center; transition: background .15s ease, color .15s ease;
+  }
+  .info-btn:hover { background: var(--gold); color: #fff; }
+  /* Puls: trekt éénmalig kort de aandacht bij verschijnen, daarna rustig */
+  .info-btn.pulse { animation: infopulse 1.1s ease-out 3; }
+  @keyframes infopulse {
+    0%   { box-shadow: 0 0 0 0 rgba(176,132,47,.55); }
+    70%  { box-shadow: 0 0 0 7px rgba(176,132,47,0); }
+    100% { box-shadow: 0 0 0 0 rgba(176,132,47,0); }
+  }
+  @media (prefers-reduced-motion: reduce) { .info-btn.pulse { animation: none; } }
+
+  /* Uitklap-paneel met de driedelige uitleg */
+  .info-panel {
+    display: none; margin-top: 10px; padding: 12px 14px;
+    background: #faf8f3; border: 1px solid var(--line); border-radius: 8px;
+    font-size: 13.5px; line-height: 1.5;
+  }
+  .info-panel.open { display: block; animation: slidein .2s ease; }
+  @keyframes slidein { from { opacity: 0; transform: translateY(-4px);} to {opacity:1; transform:none;} }
+  .info-panel p { margin-bottom: 7px; color: var(--ink-soft); }
+  .info-panel p:last-child { margin-bottom: 0; }
+  .info-panel .tag-see   { font-weight: 700; color: var(--green); }
+  .info-panel .tag-blind { font-weight: 700; color: var(--red); }
+  .info-panel .tag-diy   { font-weight: 700; color: var(--ink); }
+
+  details.why {
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    padding: 4px 18px; margin-bottom: 16px; font-family: -apple-system, sans-serif;
+  }
+  details.why summary {
+    cursor: pointer; padding: 12px 0; font-size: 15px; font-weight: 600; color: var(--ink);
+    list-style: none;
+  }
+  details.why summary::-webkit-details-marker { display: none; }
+  details.why summary::before { content: "▸ "; color: var(--gold); font-weight: bold; }
+  details.why[open] summary::before { content: "▾ "; }
+  details.why .why-body { padding: 2px 0 14px; }
+  details.why .why-body p { font-size: 14px; color: var(--muted); line-height: 1.55; margin-bottom: 10px; }
+
   .loading { font-family: -apple-system, sans-serif; text-align: center; color: var(--muted); padding: 30px; font-size: 15px; }
   .err { font-family: -apple-system, sans-serif; background: var(--red-bg); border: 1px solid #e9d3d1; color: var(--red); border-radius: 10px; padding: 16px 18px; font-size: 14px; margin-bottom: 20px; }
 
@@ -196,6 +250,42 @@ const T = {
     somethingWrong: "Something went wrong: ",
     unknownToken: "Unknown token",
     disclaimer: "<b>Read this before you invest.</b> RugGuard detects known technical risks, but it cannot see whether the hype fades, whether the market turns, or whether the creators have a subtler exit. A token that shows no red flags can still become completely worthless. This is not financial advice and no guarantee of safety or profit. Every decision is entirely at your own risk; the provider of RugGuard is not liable for any loss. Never invest more than you can afford to lose completely.",
+    scoreExplain: "<b>What this score means.</b> This is a quick safety check, not a verdict. A low-risk score means we didn't find the most common traps — it does NOT mean the token is safe or will make you money. Even a thorough check can't catch everything.",
+    whyTitle: "Why no check is ever 100% sure",
+    whyBody: "Think of RugGuard like a home inspection before you buy a house. A good inspector spots the obvious problems — a leaking roof, bad wiring, a cracked foundation — and that's incredibly useful. But they can't promise nothing will ever go wrong, and can't see every hidden issue behind the walls.\n\nA token check works the same way. We read what's visible on the blockchain and flag the known dangers. But we can't see the future, we can't read the creators' intentions, and clever scammers invent new tricks all the time. A clean result lowers your risk — it doesn't remove it.\n\nSo the rule is simple: use this as one tool among several, do your own research, and only ever invest money you can afford to lose completely.",
+    plainLabels: { see: "What we check", blind: "What we DON'T see", diy: "Check yourself" },
+    plain: {
+      mint: {
+        see:   "Whether the creators can still create new tokens right now.",
+        blind: "Whether they plan to, or will hand this power to someone else later — we only see the current on-chain state.",
+        diy:   "If minting is active, be very cautious. Prefer a project that has disabled it, or has a clear, credible reason it's still on."
+      },
+      freeze: {
+        see:   "Whether the creators can freeze wallets, which would stop you selling (a honeypot).",
+        blind: "Hidden contract tricks that block selling in other ways than the standard freeze setting.",
+        diy:   "If freezing is active, treat it as a strong warning. Try a tiny test sell before committing real money."
+      },
+      liq: {
+        see:   "How much money sits in the trading pool right now.",
+        blind: "Whether that liquidity is LOCKED or can be pulled away by the creators — our basic scan doesn't verify this yet.",
+        diy:   "Check on a liquidity locker or the token's page whether liquidity is locked or burned. Unlocked liquidity is a classic rug-pull setup."
+      },
+      hold: {
+        see:   "How much of the supply the 10 largest wallets hold.",
+        blind: "Whether several 'separate' wallets are secretly the same person (bundled insiders) — we count wallets, not owners.",
+        diy:   "Be extra careful if a few wallets hold a lot. On a block explorer, check whether top wallets are linked or funded together."
+      },
+      age: {
+        see:   "How long ago the token's trading pair was created.",
+        blind: "What happens next — a very new token is simply unproven, not automatically bad.",
+        diy:   "For brand-new tokens, wait and watch, or risk only a tiny amount. The first hours are where insiders exit onto newcomers."
+      },
+      vol: {
+        see:   "How much was traded in the last 24 hours.",
+        blind: "Whether the volume is real or faked (wash trading) to look busy — our basic scan can't tell them apart yet.",
+        diy:   "Very low volume means it's hard to sell. On a brand-new token, high volume can be faked — check whether many different wallets trade, not just a few."
+      }
+    },
     verdict: {
       high: "High risk — multiple serious red flags. High chance of a trap.",
       mid:  "Elevated risk — there are concerns. Only with money you can afford to lose completely.",
@@ -241,6 +331,42 @@ const T = {
     somethingWrong: "Er ging iets mis: ",
     unknownToken: "Onbekende token",
     disclaimer: "<b>Lees dit voordat je investeert.</b> RugGuard spoort bekende technische risico's op, maar kan niet zien of de hype wegvalt, of de markt keert, of de makers een subtielere exit hebben. Een token die geen rode vlaggen toont, kan alsnog volledig waardeloos worden. Dit is geen financieel advies en geen garantie op veiligheid of winst. Elke beslissing neem je volledig op eigen risico; de aanbieder van RugGuard is niet aansprakelijk voor enig verlies. Investeer nooit meer dan je volledig kunt missen.",
+    scoreExplain: "<b>Wat deze score betekent.</b> Dit is een snelle veiligheidscheck, geen eindoordeel. Een lage risicoscore betekent dat we de bekendste vallen niet vonden — het betekent NIET dat de token veilig is of je geld oplevert. Zelfs een grondige check vangt niet alles.",
+    whyTitle: "Waarom geen enkele scan 100% zeker is",
+    whyBody: "Zie RugGuard als een bouwkundige keuring voordat je een huis koopt. Een goede keurder ziet de duidelijke problemen — een lekkend dak, slechte bedrading, een gebarsten fundering — en dat is enorm nuttig. Maar hij kan niet beloven dat er nooit iets misgaat, en ziet niet elk verborgen gebrek achter de muren.\n\nEen token-check werkt net zo. Wij lezen wat zichtbaar is op de blockchain en signaleren de bekende gevaren. Maar we kunnen niet in de toekomst kijken, we kennen de bedoelingen van de makers niet, en slimme oplichters bedenken steeds nieuwe trucs. Een schone uitslag verlaagt je risico — het neemt het niet weg.\n\nDe regel is dus simpel: gebruik dit als één hulpmiddel naast andere, doe je eigen onderzoek, en investeer alleen geld dat je volledig kunt missen.",
+    plainLabels: { see: "Wat we checken", blind: "Wat we NIET zien", diy: "Zelf checken" },
+    plain: {
+      mint: {
+        see:   "Of de makers op dit moment nog nieuwe tokens kunnen aanmaken.",
+        blind: "Of ze dat van plan zijn, of deze macht later doorgeven — we zien alleen de huidige stand op de blockchain.",
+        diy:   "Staat bijdrukken aan, wees dan zeer voorzichtig. Kies liever een project dat het heeft uitgeschakeld, of een duidelijke, geloofwaardige reden dat het nog aanstaat."
+      },
+      freeze: {
+        see:   "Of de makers wallets kunnen bevriezen, waardoor je niet meer kunt verkopen (een honeypot).",
+        blind: "Verborgen contract-trucs die verkopen op andere manieren blokkeren dan de standaard bevriesknop.",
+        diy:   "Staat bevriezen aan, zie dat als een sterke waarschuwing. Probeer een kleine testverkoop voordat je echt geld inlegt."
+      },
+      liq: {
+        see:   "Hoeveel geld er nu in de handelspool zit.",
+        blind: "Of die liquiditeit VASTGEZET is of kan worden weggetrokken door de makers — onze basisscan controleert dit nog niet.",
+        diy:   "Controleer via een liquidity-locker of de tokenpagina of de liquiditeit vastgezet of verbrand is. Losse liquiditeit is een klassieke rug-pull-opzet."
+      },
+      hold: {
+        see:   "Hoeveel van de voorraad de 10 grootste wallets bezitten.",
+        blind: "Of meerdere 'losse' wallets stiekem dezelfde persoon zijn (gebundelde insiders) — we tellen wallets, geen eigenaren.",
+        diy:   "Wees extra voorzichtig als enkele wallets veel bezitten. Kijk op een block explorer of de topwallets gekoppeld zijn of samen gevuld."
+      },
+      age: {
+        see:   "Hoe lang geleden het handelspaar van de token is aangemaakt.",
+        blind: "Wat er hierna gebeurt — een zeer nieuwe token is simpelweg onbewezen, niet automatisch slecht.",
+        diy:   "Bij gloednieuwe tokens: wacht en kijk, of riskeer maar een klein bedrag. In de eerste uren stappen insiders uit ten koste van nieuwkomers."
+      },
+      vol: {
+        see:   "Hoeveel er in de laatste 24 uur is verhandeld.",
+        blind: "Of dat volume echt is of nep (wash trading) om druk te lijken — onze basisscan kan dat nog niet onderscheiden.",
+        diy:   "Erg laag volume betekent moeilijk verkopen. Bij een gloednieuwe token kan hoog volume nep zijn — kijk of veel verschillende wallets handelen, niet slechts een paar."
+      }
+    },
     verdict: {
       high: "Hoog risico — meerdere ernstige rode vlaggen. Grote kans op een val.",
       mid:  "Verhoogd risico — er zijn zorgen. Alleen met geld dat je volledig kunt missen.",
@@ -398,10 +524,34 @@ function render(r) {
   const out = document.getElementById("result");
   const name = r.name || t.unknownToken;
 
-  const rows = r.checks.map(function(c){
+  // categorie uit de check-key halen (mint/freeze/liq/hold/age/vol) voor de uitleg
+  function plainFor(key) {
+    var cat = key.replace(/Danger|Warn|Ok|Unknown$/,"");
+    return t.plain[cat] || null;
+  }
+
+  const rows = r.checks.map(function(c, i){
     const loc = localizeCheck(c);
-    return '<div class="check"><div class="dot ' + c.level + '"></div>' +
-      '<div class="body"><h4>' + escapeHtml(loc[0]) + '</h4><p>' + escapeHtml(loc[1]) + '</p></div></div>';
+    const info = plainFor(c.key);
+    var infoBtn = "", infoPanel = "";
+    if (info) {
+      const lb = t.plainLabels;
+      infoBtn = '<button class="info-btn pulse" aria-label="info" onclick="toggleInfo(' + i + ')">i</button>';
+      infoPanel =
+        '<div class="info-panel" id="info-' + i + '">' +
+          '<p><span class="tag-see">' + escapeHtml(lb.see) + ':</span> ' + escapeHtml(info.see) + '</p>' +
+          '<p><span class="tag-blind">' + escapeHtml(lb.blind) + ':</span> ' + escapeHtml(info.blind) + '</p>' +
+          '<p><span class="tag-diy">' + escapeHtml(lb.diy) + ':</span> ' + escapeHtml(info.diy) + '</p>' +
+        '</div>';
+    }
+    return '<div class="check">' +
+        '<div class="dot ' + c.level + '"></div>' +
+        '<div class="body">' +
+          '<div class="check-head"><h4>' + escapeHtml(loc[0]) + '</h4>' + infoBtn + '</div>' +
+          '<p>' + escapeHtml(loc[1]) + '</p>' +
+          infoPanel +
+        '</div>' +
+      '</div>';
   }).join("");
 
   out.className = "show";
@@ -412,8 +562,25 @@ function render(r) {
       '<div class="score">' + r.score + '<span style="font-size:22px;opacity:.7">/100</span></div>' +
       '<div class="headline">' + t.verdict[r.band] + '</div>' +
     '</div>' +
+    '<div class="score-explain">' + t.scoreExplain + '</div>' +
     '<div class="checks">' + rows + '</div>' +
+    '<details class="why"><summary>' + escapeHtml(t.whyTitle) + '</summary>' +
+      '<div class="why-body">' + t.whyBody.split("\n\n").map(function(par){ return '<p>' + escapeHtml(par) + '</p>'; }).join("") + '</div>' +
+    '</details>' +
     '<div class="full-disclaimer">' + t.disclaimer + '</div>';
+
+  // stop de puls zodra de gebruiker gescrold/geklikt heeft, zodat het niet blijft trekken
+  // (de puls-animatie speelt sowieso maar kort; dit is een extra rust-maatregel)
+}
+
+// info-uitleg openen/sluiten per check
+function toggleInfo(i) {
+  var panel = document.getElementById("info-" + i);
+  if (!panel) return;
+  panel.classList.toggle("open");
+  // knop is aangeklikt -> puls van alle knoppen weghalen (aandacht is niet meer nodig)
+  var btns = document.querySelectorAll(".info-btn.pulse");
+  btns.forEach(function(b){ b.classList.remove("pulse"); });
 }
 
 function run() {

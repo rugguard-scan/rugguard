@@ -262,6 +262,19 @@
   }
   .share-toast.show { opacity: 1; }
 
+  /* Feedback-blok */
+  .feedback {
+    text-align: center; font-size: 13.5px; color: var(--text-soft);
+    background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+    padding: 16px 18px; margin-bottom: 24px; line-height: 1.5;
+  }
+  .feedback a {
+    display: inline-block; margin-top: 8px; color: var(--mint); font-weight: 700;
+    text-decoration: none; border: 1px solid var(--mint-dim); border-radius: 10px;
+    padding: 8px 16px; transition: background .15s ease, color .15s ease;
+  }
+  .feedback a:hover { background: var(--mint); color: #0b1220; }
+
   @media (max-width: 560px) {
     .scan-row { flex-direction: column; }
     .logo { font-size: 28px; }
@@ -317,6 +330,11 @@
 
   <div id="result"></div>
 
+  <div class="feedback" id="feedback-block">
+    <span id="t-feedback-text"></span>
+    <a id="t-feedback-link" href="https://docs.google.com/forms/d/e/1FAIpQLSfZxjU4cwxBPEgOPJSJgFyP6faX9XGI-kDqlq2j828dYLFmUw/viewform" target="_blank" rel="noopener"></a>
+  </div>
+
   <footer id="t-footer"></footer>
 
 </div>
@@ -361,6 +379,8 @@ const T = {
     shareCopied: "Copied! Paste it anywhere.",
     shareResultText: function(name, score){ return "I just ran " + name + " through RugGuard \u2014 risk score " + score + "/100. Always check before you buy in \ud83d\udee1\ufe0f rugguard-check.netlify.app"; },
     shareAppText: "Thinking about a Solana coin? Run a free 10-second safety check first \u2014 RugGuard shows the red flags before you buy in \ud83d\udee1\ufe0f rugguard-check.netlify.app",
+    feedbackText: "Got a minute? Tell us what you think \u2014 it helps us improve.",
+    feedbackLink: "Give feedback",
     disclaimer: "<b>Read this before you invest.</b> RugGuard spots common traps, but it can't see everything \u2014 the hype can fade, the market can turn, and some tricks are hidden. A coin with no red flags can still become worthless. This is not financial advice and no promise of safety or profit. You decide, entirely at your own risk; we are not liable for any loss. Never invest more than you can afford to lose completely.",
     scoreExplain: "<b>What this score means.</b> This is a quick safety check, not a promise. A low score means we didn't find the most common traps \u2014 it does NOT mean the coin is safe or that you'll make money. Even a deep check can't catch everything.",
     whyTitle: "Why no check is ever 100% sure",
@@ -468,6 +488,8 @@ const T = {
     shareCopied: "Gekopieerd! Plak het waar je wilt.",
     shareResultText: function(name, score){ return "Ik checkte " + name + " even met RugGuard \u2014 risicoscore " + score + "/100. Altijd checken voordat je instapt \ud83d\udee1\ufe0f rugguard-check.netlify.app"; },
     shareAppText: "Ga je iets doen met een Solana-munt? Doe eerst een gratis check van 10 seconden \u2014 RugGuard laat de rode vlaggen zien voordat je instapt \ud83d\udee1\ufe0f rugguard-check.netlify.app",
+    feedbackText: "Heb je een minuutje? Laat weten wat je ervan vindt \u2014 zo maken we de app beter.",
+    feedbackLink: "Geef feedback",
     disclaimer: "<b>Lees dit voordat je investeert.</b> RugGuard vindt veelvoorkomende trucs, maar kan niet alles zien \u2014 de hype kan wegvallen, de markt kan keren, en sommige trucs zijn verborgen. Een munt zonder rode vlaggen kan alsnog waardeloos worden. Dit is geen financieel advies en geen belofte van veiligheid of winst. Jij beslist, volledig op eigen risico; wij zijn niet aansprakelijk voor verlies. Investeer nooit meer dan je volledig kunt missen.",
     scoreExplain: "<b>Wat deze score betekent.</b> Dit is een snelle veiligheidscheck, geen belofte. Een lage score betekent dat we de bekendste trucs niet vonden \u2014 het betekent NIET dat de munt veilig is of dat je geld gaat verdienen. Zelfs een diepe check vangt niet alles.",
     whyTitle: "Waarom geen enkele check 100% zeker is",
@@ -575,6 +597,8 @@ function applyStaticText() {
   document.getElementById("go").textContent = t.button;
   document.getElementById("t-strip").textContent = t.strip;
   document.getElementById("t-footer").textContent = t.footer;
+  document.getElementById("t-feedback-text").textContent = t.feedbackText;
+  document.getElementById("t-feedback-link").textContent = t.feedbackLink;
   document.getElementById("t-helpbtn").textContent = t.helpBtn;
   document.getElementById("t-gloss-title").textContent = t.glossTitle;
   document.getElementById("t-gloss-intro").textContent = t.glossIntro;

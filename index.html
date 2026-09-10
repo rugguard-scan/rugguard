@@ -275,6 +275,57 @@
   }
   .feedback a:hover { background: var(--mint); color: #0b1220; }
 
+  /* Modus-tabs: munt checken / wallet checken */
+  .modetabs { display: flex; gap: 8px; margin-bottom: 12px; }
+  .modetabs button {
+    flex: 1; padding: 12px 10px; border: 1px solid var(--line);
+    border-radius: 14px; background: var(--surface); color: var(--muted);
+    font-size: 14px; font-weight: 600; cursor: pointer; transition: all .15s;
+  }
+  .modetabs button:hover { color: var(--text-soft); border-color: var(--violet); }
+  .modetabs button.active {
+    background: linear-gradient(135deg, var(--violet), #6f4ff0);
+    color: #fff; border-color: transparent;
+  }
+  .wallet-intro {
+    font-size: 14px; color: var(--text-soft); margin-bottom: 16px; line-height: 1.55;
+  }
+  .wallet-intro b { color: var(--text); font-weight: 700; }
+  #wallet {
+    flex: 1; font-size: 15px; font-family: inherit;
+    padding: 15px 16px; border: 1.5px solid var(--line); border-radius: 14px;
+    background: var(--bg-2); color: var(--text); min-width: 0;
+  }
+  #wallet::placeholder { color: var(--muted); }
+  #wallet:focus { outline: none; border-color: var(--violet); box-shadow: 0 0 0 3px rgba(139,107,255,.25); }
+
+  /* Portfolio-overzicht */
+  .pf-summary {
+    font-size: 15px; color: var(--text-soft); font-weight: 600;
+    margin-bottom: 14px; text-align: center;
+  }
+  .pf-hint { font-size: 13px; color: var(--muted); text-align: center; margin-top: 16px; }
+  .pf-item {
+    display: flex; align-items: center; gap: 14px;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 16px; padding: 14px 16px; margin-bottom: 10px;
+    cursor: pointer; transition: border-color .15s, transform .1s;
+  }
+  .pf-item:hover { border-color: var(--violet); transform: translateY(-1px); }
+  .pf-badge {
+    flex-shrink: 0; width: 54px; height: 54px; border-radius: 12px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 20px; line-height: 1;
+  }
+  .pf-badge small { font-size: 9px; font-weight: 600; opacity: .8; margin-top: 2px; text-transform: uppercase; letter-spacing: .5px; }
+  .pf-badge.low  { background: rgba(52,226,176,.16);  color: #34e2b0; }
+  .pf-badge.mid  { background: rgba(255,182,56,.16);  color: #ffb638; }
+  .pf-badge.high { background: rgba(255,93,108,.16);  color: #ff5d6c; }
+  .pf-body { flex: 1; min-width: 0; }
+  .pf-name { font-size: 15px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pf-verdict { font-size: 13px; color: var(--text-soft); margin-top: 3px; }
+  .pf-arrow { flex-shrink: 0; color: var(--muted); font-size: 20px; }
+
   @media (max-width: 560px) {
     .scan-row { flex-direction: column; }
     .logo { font-size: 28px; }
@@ -318,7 +369,12 @@
 
   <div class="intro" id="t-intro"></div>
 
-  <div class="scan">
+  <div class="modetabs">
+    <button id="tab-coin" class="active" onclick="setMode('coin')"></button>
+    <button id="tab-wallet" onclick="setMode('wallet')"></button>
+  </div>
+
+  <div class="scan" id="scan-coin">
     <label for="mint" id="t-label"></label>
     <div class="scan-row">
       <input id="mint" type="text" spellcheck="false"
@@ -326,6 +382,16 @@
       <button class="go" id="go" onclick="run()"></button>
     </div>
   </div>
+
+  <div class="scan" id="scan-wallet" style="display:none">
+    <div class="wallet-intro" id="t-wallet-intro"></div>
+    <label for="wallet" id="t-wallet-label"></label>
+    <div class="scan-row">
+      <input id="wallet" type="text" spellcheck="false" />
+      <button class="go" id="go-wallet" onclick="runWallet()"></button>
+    </div>
+  </div>
+
   <div class="disclaimer" id="t-strip"></div>
 
   <div id="result"></div>
@@ -453,6 +519,20 @@ const T = {
       holdOk:      function(p){ return ["Who owns the coins?", "The 10 biggest owners hold " + p + "%. Reasonably spread out."]; },
       holdUnknown: ["Who owns the coins?", "Couldn't load the owners."]
     },
+    tabCoin: "Check a coin",
+    tabWallet: "Check my wallet",
+    walletLabel: "Paste your wallet address here",
+    walletPlaceholder: "Your Solana wallet address",
+    walletButton: "Check my coins",
+    walletIntro: "See the coins already in your wallet and how risky each one looks. Paste your <b>public</b> wallet address \u2014 you never connect your wallet and never enter a password or secret key. RugGuard only reads what's already public on the blockchain.",
+    walletBadAddr: "That doesn't look like a valid Solana wallet address. It's usually a long string of 32\u201344 letters and numbers.",
+    walletLoading: "Reading your wallet\u2026",
+    walletCheckingN: function(done, total){ return "Checking your coins\u2026 " + done + " of " + total; },
+    walletEmpty: "We found no tradable coins in this wallet. That can be normal \u2014 the wallet may only hold SOL or brand-new coins with no market yet.",
+    walletSummary: function(n){ return "We checked " + n + (n === 1 ? " coin" : " coins") + " in this wallet, riskiest first."; },
+    walletTooMany: function(shown, total){ return "This wallet holds " + total + " coins. Showing the " + shown + " largest holdings, riskiest first."; },
+    walletScore: "risk",
+    walletSafeHint: "Tip: tap any coin to check it in full on the \u201cCheck a coin\u201d tab.",
     glossTitle: "Word list",
     glossIntro: "Every tricky word from the app, explained in plain language. Don't know a word? Look it up here \u2014 not knowing is just the start of learning.",
     glossary: [
@@ -562,6 +642,20 @@ const T = {
       holdOk:      function(p){ return ["Wie bezit de munten?", "De 10 grootste eigenaren bezitten " + p + "%. Redelijk verspreid."]; },
       holdUnknown: ["Wie bezit de munten?", "Kon de eigenaren niet laden."]
     },
+    tabCoin: "Munt checken",
+    tabWallet: "Mijn wallet checken",
+    walletLabel: "Plak hier je wallet-adres",
+    walletPlaceholder: "Je Solana wallet-adres",
+    walletButton: "Check mijn munten",
+    walletIntro: "Zie de munten die al in je wallet zitten en hoe risicovol elke munt eruitziet. Plak je <b>openbare</b> wallet-adres \u2014 je koppelt je wallet nooit en vult nooit een wachtwoord of geheime sleutel in. RugGuard leest alleen wat al openbaar op de blockchain staat.",
+    walletBadAddr: "Dit lijkt geen geldig Solana wallet-adres. Het is meestal een lange reeks van 32\u201344 letters en cijfers.",
+    walletLoading: "Je wallet wordt gelezen\u2026",
+    walletCheckingN: function(done, total){ return "Je munten worden gecheckt\u2026 " + done + " van " + total; },
+    walletEmpty: "We vonden geen verhandelbare munten in deze wallet. Dat kan normaal zijn \u2014 de wallet bevat misschien alleen SOL of gloednieuwe munten zonder markt.",
+    walletSummary: function(n){ return "We checkten " + n + (n === 1 ? " munt" : " munten") + " in deze wallet, meest risicovol eerst."; },
+    walletTooMany: function(shown, total){ return "Deze wallet bevat " + total + " munten. We tonen de " + shown + " grootste posities, meest risicovol eerst."; },
+    walletScore: "risico",
+    walletSafeHint: "Tip: tik op een munt om die volledig te checken op het tabblad \u201cMunt checken\u201d.",
     glossTitle: "Woordenlijst",
     glossIntro: "Elk lastig woord uit de app, uitgelegd in gewone taal. Ken je een woord niet? Zoek het hier op \u2014 iets niet weten is gewoon het begin van leren.",
     glossary: [
@@ -615,6 +709,12 @@ function applyStaticText() {
   } else {
     if (fbBlock) fbBlock.style.display = "none";
   }
+  document.getElementById("tab-coin").textContent = t.tabCoin;
+  document.getElementById("tab-wallet").textContent = t.tabWallet;
+  document.getElementById("t-wallet-label").textContent = t.walletLabel;
+  document.getElementById("t-wallet-intro").innerHTML = t.walletIntro;
+  document.getElementById("wallet").placeholder = t.walletPlaceholder;
+  document.getElementById("go-wallet").textContent = t.walletButton;
   document.getElementById("t-helpbtn").textContent = t.helpBtn;
   document.getElementById("t-gloss-title").textContent = t.glossTitle;
   document.getElementById("t-gloss-intro").textContent = t.glossIntro;
@@ -911,11 +1011,154 @@ function run() {
   });
 }
 
+// ===== Modus wisselen: munt checken <-> wallet checken =====
+let mode = "coin";
+function setMode(m) {
+  mode = m;
+  document.getElementById("tab-coin").classList.toggle("active", m === "coin");
+  document.getElementById("tab-wallet").classList.toggle("active", m === "wallet");
+  document.getElementById("scan-coin").style.display   = m === "coin"   ? "" : "none";
+  document.getElementById("scan-wallet").style.display = m === "wallet" ? "" : "none";
+  // resultaat leegmaken bij het wisselen zodat oude uitslag niet blijft staan
+  const out = document.getElementById("result");
+  out.className = ""; out.innerHTML = ""; lastResult = null;
+}
+
+// ===== Portfolio: alle munten in een wallet checken =====
+const SPL_TOKEN_PROGRAM = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
+const SPL_TOKEN_2022     = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb";
+
+// Haal de tokens op die in een wallet zitten. Geeft een lijst terug van
+// { mint, amount } voor elke munt met een positief saldo.
+async function getWalletTokens(owner) {
+  let accounts = [];
+  // Zowel het klassieke token-programma als Token-2022 uitlezen.
+  for (const prog of [SPL_TOKEN_PROGRAM, SPL_TOKEN_2022]) {
+    try {
+      const res = await rpc("getTokenAccountsByOwner", [
+        owner, { programId: prog }, { encoding: "jsonParsed" }
+      ]);
+      if (res && res.value) accounts = accounts.concat(res.value);
+    } catch (e) { /* het ene programma kan falen; het andere kan nog lukken */ }
+  }
+  const byMint = {};
+  for (const acc of accounts) {
+    try {
+      const info = acc.account.data.parsed.info;
+      const amt = info.tokenAmount;
+      const ui = amt && amt.uiAmount != null ? Number(amt.uiAmount)
+               : (amt && amt.amount != null ? Number(amt.amount) : 0);
+      if (ui > 0 && info.mint) {
+        // Zelfde munt kan in meerdere token-accounts zitten: saldo's optellen,
+        // zodat een munt nooit dubbel gecheckt of dubbel getoond wordt.
+        byMint[info.mint] = (byMint[info.mint] || 0) + ui;
+      }
+    } catch (e) {}
+  }
+  return Object.keys(byMint).map(function(mint){ return { mint: mint, amount: byMint[mint] }; });
+}
+
+const WALLET_MAX_CHECKS = 12; // hoeveel munten we maximaal volledig checken
+
+function runWallet() {
+  const owner = document.getElementById("wallet").value.trim();
+  const out = document.getElementById("result");
+  const btn = document.getElementById("go-wallet");
+  const t = T[lang];
+
+  if (owner.length < 32 || owner.length > 44 || /[^1-9A-HJ-NP-Za-km-z]/.test(owner)) {
+    lastResult = null;
+    out.className = "show";
+    out.innerHTML = '<div class="err">' + t.walletBadAddr + '</div>';
+    return;
+  }
+
+  btn.disabled = true; btn.textContent = t.scanning;
+  out.className = "show";
+  out.innerHTML = '<div class="loading">' + t.walletLoading + '</div>';
+
+  getWalletTokens(owner).then(async function(tokens){
+    if (!tokens.length) {
+      out.innerHTML = '<div class="loading">' + t.walletEmpty + '</div>';
+      btn.disabled = false; btn.textContent = t.walletButton;
+      return;
+    }
+    // Grootste posities eerst; daarna beperken tot een behapbaar aantal.
+    tokens.sort(function(a, b){ return b.amount - a.amount; });
+    const totalFound = tokens.length;
+    const toCheck = tokens.slice(0, WALLET_MAX_CHECKS);
+
+    const results = [];
+    for (let i = 0; i < toCheck.length; i++) {
+      out.innerHTML = '<div class="loading">' + t.walletCheckingN(i, toCheck.length) + '</div>';
+      try {
+        const r = await analyze(toCheck[i].mint);
+        // munten zonder markt/naam overslaan: die zeggen een beginner niets
+        if (r.name || (r.checks && r.checks.some(function(c){ return c.level === "DANGER" || c.level === "WARN"; }))) {
+          r.mint = toCheck[i].mint;
+          results.push(r);
+        }
+      } catch (e) { /* een enkele munt die faalt slaan we gewoon over */ }
+    }
+
+    renderWallet(results, totalFound, toCheck.length);
+    btn.disabled = false; btn.textContent = t.walletButton;
+  }).catch(function(err){
+    out.innerHTML = '<div class="err">' + t.somethingWrong + escapeHtml(err.message) + '<br>' + t.rpcErr + '</div>';
+    btn.disabled = false; btn.textContent = t.walletButton;
+  });
+}
+
+function renderWallet(results, totalFound, checkedCount) {
+  const t = T[lang];
+  const out = document.getElementById("result");
+
+  if (!results.length) {
+    out.innerHTML = '<div class="loading">' + t.walletEmpty + '</div>';
+    return;
+  }
+
+  // Meest risicovol eerst.
+  results.sort(function(a, b){ return b.score - a.score; });
+
+  const summary = totalFound > checkedCount
+    ? t.walletTooMany(checkedCount, totalFound)
+    : t.walletSummary(results.length);
+
+  const items = results.map(function(r){
+    const name = (r.name || t.unknownToken) + (r.symbol && r.symbol !== "?" ? " (" + r.symbol + ")" : "");
+    return '<div class="pf-item" onclick="checkFromWallet(\'' + r.mint + '\')">' +
+        '<div class="pf-badge ' + r.band + '">' + r.score + '<small>' + escapeHtml(t.walletScore) + '</small></div>' +
+        '<div class="pf-body">' +
+          '<div class="pf-name">' + escapeHtml(name) + '</div>' +
+          '<div class="pf-verdict">' + escapeHtml(t.verdict[r.band]) + '</div>' +
+        '</div>' +
+        '<div class="pf-arrow">\u203a</div>' +
+      '</div>';
+  }).join("");
+
+  out.className = "show";
+  out.innerHTML =
+    '<div class="pf-summary">' + escapeHtml(summary) + '</div>' +
+    items +
+    '<div class="pf-hint">' + escapeHtml(t.walletSafeHint) + '</div>' +
+    '<div class="full-disclaimer">' + t.disclaimer + '</div>';
+}
+
+// Vanuit het portfolio doorklikken naar de volledige check van één munt.
+function checkFromWallet(mint) {
+  setMode("coin");
+  document.getElementById("mint").value = mint;
+  run();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, function(m){ return ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" })[m]; });
 }
 
 document.getElementById("mint").addEventListener("keydown", function(e){ if (e.key === "Enter") run(); });
+document.getElementById("wallet").addEventListener("keydown", function(e){ if (e.key === "Enter") runWallet(); });
 
 applyStaticText();
 </script>

@@ -193,6 +193,21 @@
   .info-panel .tag-blind { font-weight: 700; color: var(--coral); }
   .info-panel .tag-diy   { font-weight: 700; color: var(--violet); }
 
+  /* Niveau-label bovenaan het 'zelf checken'-blok: in 1 oogopslag
+     zien of je dit zelf kunt, deels, of gewoon voorzichtig moet zijn */
+  .lvl-badge {
+    display: inline-block; margin-bottom: 12px;
+    padding: 5px 12px; border-radius: 999px;
+    font-size: 12px; font-weight: 700; letter-spacing: .2px;
+  }
+  .lvl-badge::before { margin-right: 6px; font-weight: 700; }
+  .lvl-badge.easy    { background: rgba(52,226,176,.15); color: #34e2b0; }
+  .lvl-badge.easy::before    { content: "\2713"; }        /* vinkje */
+  .lvl-badge.partial { background: rgba(255,182,56,.15); color: #ffb638; }
+  .lvl-badge.partial::before { content: "\25D0"; }        /* half gevuld */
+  .lvl-badge.hard    { background: rgba(139,134,168,.18); color: var(--text-soft); }
+  .lvl-badge.hard::before    { content: "\26A0"; }        /* waarschuwing */
+
   /* Waarom-uitklap */
   details.why {
     background: var(--surface); border: 1px solid var(--line); border-radius: 16px;
@@ -459,36 +474,43 @@ const T = {
     whyTitle: "Why no check is ever 100% sure",
     whyBody: "Think of RugGuard like having a house checked before you buy it. A good inspector spots the obvious problems \u2014 a leaking roof, bad wiring \u2014 and that's really useful. But they can't promise nothing will ever go wrong, and can't see every hidden issue behind the walls.\n\nChecking a coin works the same way. We read what's visible on the blockchain and flag the known dangers. But we can't see the future, we don't know the creators' plans, and scammers keep inventing new tricks. A clean result lowers your risk \u2014 it doesn't remove it.\n\nSo the rule is simple: use this as one helper among several, look into things yourself, and only ever invest money you can afford to lose completely.",
     plainLabels: { see: "What we check", blind: "What we can't see", diy: "How to check it yourself" },
+    levelLabels: { easy: "You can check this yourself", partial: "Partly checkable", hard: "Hard \u2014 just be extra careful" },
     plain: {
       mint: {
+        level: "easy",
         see:   "Whether the creators can still make new coins right now.",
         blind: "Whether they plan to, or will pass this power to someone else later \u2014 we only see how it's set right now.",
-        diy:   "Open the coin on a Solana blockchain explorer (a free website that shows everything about the coin). Paste the coin's address and look for \u201cMint Authority\u201d. If it says \u201cnone\u201d or is empty, no one can make extra coins \u2014 good. If there's an address there, they still can \u2014 be careful. [Easy to check yourself]"
+        diy:   "Open the coin on a Solana blockchain explorer (a free website that shows everything about the coin). Paste the coin's address and look for \u201cMint Authority\u201d. If it says \u201cnone\u201d or is empty, no one can make extra coins \u2014 good. If there's an address there, they still can \u2014 be careful."
       },
       freeze: {
+        level: "easy",
         see:   "Whether the creators can lock your coins so you can't sell (a trap called a honeypot).",
         blind: "Hidden tricks in the coin's code that block selling in other ways.",
-        diy:   "On the same explorer page, look for \u201cFreeze Authority\u201d. \u201cNone\u201d or empty means your coins can't be locked \u2014 good. An address means they can lock them \u2014 treat that as a strong warning. [Easy to check yourself]"
+        diy:   "On the same explorer page, look for \u201cFreeze Authority\u201d. \u201cNone\u201d or empty means your coins can't be locked \u2014 good. An address means they can lock them \u2014 treat that as a strong warning."
       },
       liq: {
+        level: "hard",
         see:   "How much money is available right now to buy and sell this coin.",
         blind: "Whether that money is locked in place or can be pulled away by the creators \u2014 our quick check doesn't verify this yet.",
-        diy:   "Checking whether the money pool is truly locked means reading the coin's transactions \u2014 honestly hard when you're starting out. If you can't check it yourself, treat it as an unknown risk: start very small, or wait until you understand it. Not being sure is itself a reason to be careful. [Hard \u2014 be extra careful]"
+        diy:   "Checking whether the money pool is truly locked means reading the coin's transactions \u2014 honestly hard when you're starting out. If you can't check it yourself, treat it as an unknown risk: start very small, or wait until you understand it. Not being sure is itself a reason to be careful."
       },
       hold: {
+        level: "partial",
         see:   "How much of all the coins the 10 biggest owners hold together.",
         blind: "Whether several \u201cseparate\u201d owners are secretly the same person \u2014 we count wallets, not people.",
-        diy:   "On the explorer, open the \u201cHolders\u201d tab to see how much the biggest owners hold. If one or two hold a huge share, that's a warning. Telling whether they're secretly the same person is hard \u2014 if you can't judge it, treat high concentration as a reason to be careful. [Partly checkable]"
+        diy:   "On the explorer, open the \u201cHolders\u201d tab to see how much the biggest owners hold. If one or two hold a huge share, that's a warning. Telling whether they're secretly the same person is hard \u2014 if you can't judge it, treat high concentration as a reason to be careful."
       },
       age: {
+        level: "easy",
         see:   "How long ago this coin was created.",
         blind: "What happens next \u2014 a brand-new coin is simply unproven, not automatically bad.",
-        diy:   "The coin's page shows when it was made. Very new (hours or days) is the riskiest moment, because the earliest people can sell onto newcomers. If it's brand new, risk only a small amount or wait. [Easy to check yourself]"
+        diy:   "The coin's page shows when it was made. Very new (hours or days) is the riskiest moment, because the earliest people can sell onto newcomers. If it's brand new, risk only a small amount or wait."
       },
       vol: {
+        level: "hard",
         see:   "How much was bought and sold in the last 24 hours.",
         blind: "Whether that trading is real or faked to look busy \u2014 our quick check can't tell them apart yet.",
-        diy:   "Very little trading means it's hard to sell later. Suspiciously high trading on a brand-new coin can be faked. If it looks too good for how new it is, be extra careful and don't rush. [Hard \u2014 be extra careful]"
+        diy:   "Very little trading means it's hard to sell later. Suspiciously high trading on a brand-new coin can be faked. If it looks too good for how new it is, be extra careful and don't rush."
       }
     },
     verdict: {
@@ -582,36 +604,43 @@ const T = {
     whyTitle: "Waarom geen enkele check 100% zeker is",
     whyBody: "Zie RugGuard als een huis laten keuren voordat je het koopt. Een goede keurder ziet de duidelijke problemen \u2014 een lekkend dak, slechte bedrading \u2014 en dat is echt nuttig. Maar hij kan niet beloven dat er nooit iets misgaat, en ziet niet elk verborgen gebrek achter de muren.\n\nEen munt checken werkt net zo. We lezen wat zichtbaar is op de blockchain en wijzen de bekende gevaren aan. Maar we kunnen niet in de toekomst kijken, we kennen de plannen van de makers niet, en oplichters bedenken steeds nieuwe trucs. Een schoon resultaat verlaagt je risico \u2014 het neemt het niet weg.\n\nDe regel is dus simpel: gebruik dit als \u00e9\u00e9n hulpje naast andere, zoek zelf dingen uit, en investeer alleen geld dat je volledig kunt missen.",
     plainLabels: { see: "Wat we checken", blind: "Wat we niet kunnen zien", diy: "Zo check je het zelf" },
+    levelLabels: { easy: "Dit kun je zelf checken", partial: "Deels te checken", hard: "Lastig \u2014 wees gewoon extra voorzichtig" },
     plain: {
       mint: {
+        level: "easy",
         see:   "Of de makers nu nog nieuwe munten kunnen maken.",
         blind: "Of ze dat van plan zijn, of deze macht later doorgeven \u2014 we zien alleen hoe het nu ingesteld staat.",
-        diy:   "Open de munt op een Solana blockchain explorer (een gratis website die alles over de munt laat zien). Plak het adres van de munt en zoek naar \u201cMint Authority\u201d. Staat daar \u201cnone\u201d of is het leeg, dan kan niemand extra munten maken \u2014 goed. Staat er een adres, dan kan het nog wel \u2014 wees voorzichtig. [Zelf te checken]"
+        diy:   "Open de munt op een Solana blockchain explorer (een gratis website die alles over de munt laat zien). Plak het adres van de munt en zoek naar \u201cMint Authority\u201d. Staat daar \u201cnone\u201d of is het leeg, dan kan niemand extra munten maken \u2014 goed. Staat er een adres, dan kan het nog wel \u2014 wees voorzichtig."
       },
       freeze: {
+        level: "easy",
         see:   "Of de makers je munten op slot kunnen zetten zodat je niet kunt verkopen (een val die honeypot heet).",
         blind: "Verborgen trucs in de code van de munt die verkopen op andere manieren blokkeren.",
-        diy:   "Zoek op dezelfde explorer-pagina naar \u201cFreeze Authority\u201d. \u201cNone\u201d of leeg betekent dat je munten niet op slot kunnen \u2014 goed. Een adres betekent dat ze het wel kunnen \u2014 zie dat als een sterke waarschuwing. [Zelf te checken]"
+        diy:   "Zoek op dezelfde explorer-pagina naar \u201cFreeze Authority\u201d. \u201cNone\u201d of leeg betekent dat je munten niet op slot kunnen \u2014 goed. Een adres betekent dat ze het wel kunnen \u2014 zie dat als een sterke waarschuwing."
       },
       liq: {
+        level: "hard",
         see:   "Hoeveel geld er nu beschikbaar is om deze munt te kopen en verkopen.",
         blind: "Of dat geld vastgezet is of kan worden weggehaald door de makers \u2014 onze snelle check controleert dit nog niet.",
-        diy:   "Checken of de geldpot echt vastgezet is, betekent de transacties van de munt lezen \u2014 eerlijk gezegd lastig als je begint. Kun je het niet zelf checken, behandel het dan als een onbekend risico: begin heel klein, of wacht tot je het begrijpt. Twijfel is op zichzelf al een reden om voorzichtig te zijn. [Lastig \u2014 wees extra voorzichtig]"
+        diy:   "Checken of de geldpot echt vastgezet is, betekent de transacties van de munt lezen \u2014 eerlijk gezegd lastig als je begint. Kun je het niet zelf checken, behandel het dan als een onbekend risico: begin heel klein, of wacht tot je het begrijpt. Twijfel is op zichzelf al een reden om voorzichtig te zijn."
       },
       hold: {
+        level: "partial",
         see:   "Hoeveel van alle munten de 10 grootste eigenaren samen bezitten.",
         blind: "Of meerdere \u201closse\u201d eigenaren stiekem dezelfde persoon zijn \u2014 we tellen wallets, geen mensen.",
-        diy:   "Open op de explorer het tabblad \u201cHolders\u201d om te zien hoeveel de grootste eigenaren bezitten. Heeft \u00e9\u00e9n of twee een enorm deel, dan is dat een waarschuwing. Of ze stiekem dezelfde persoon zijn, is lastig te zien \u2014 kun je dat niet beoordelen, zie hoge concentratie dan als reden om voorzichtig te zijn. [Deels te checken]"
+        diy:   "Open op de explorer het tabblad \u201cHolders\u201d om te zien hoeveel de grootste eigenaren bezitten. Heeft \u00e9\u00e9n of twee een enorm deel, dan is dat een waarschuwing. Of ze stiekem dezelfde persoon zijn, is lastig te zien \u2014 kun je dat niet beoordelen, zie hoge concentratie dan als reden om voorzichtig te zijn."
       },
       age: {
+        level: "easy",
         see:   "Hoe lang geleden deze munt is gemaakt.",
         blind: "Wat er hierna gebeurt \u2014 een gloednieuwe munt is simpelweg onbewezen, niet automatisch slecht.",
-        diy:   "De pagina van de munt laat zien wanneer hij is gemaakt. Zeer nieuw (uren of dagen) is het risicovolste moment, want de eersten kunnen verkopen aan nieuwkomers. Is het gloednieuw, riskeer dan maar een klein bedrag of wacht. [Zelf te checken]"
+        diy:   "De pagina van de munt laat zien wanneer hij is gemaakt. Zeer nieuw (uren of dagen) is het risicovolste moment, want de eersten kunnen verkopen aan nieuwkomers. Is het gloednieuw, riskeer dan maar een klein bedrag of wacht."
       },
       vol: {
+        level: "hard",
         see:   "Hoeveel er in de laatste 24 uur is gekocht en verkocht.",
         blind: "Of die handel echt is of nep om druk te lijken \u2014 onze snelle check kan dat nog niet onderscheiden.",
-        diy:   "Erg weinig handel betekent dat je later moeilijk kunt verkopen. Verdacht veel handel op een gloednieuwe munt kan nep zijn. Ziet het er te mooi uit voor hoe nieuw het is, wees dan extra voorzichtig en haast je niet. [Lastig \u2014 wees extra voorzichtig]"
+        diy:   "Erg weinig handel betekent dat je later moeilijk kunt verkopen. Verdacht veel handel op een gloednieuwe munt kan nep zijn. Ziet het er te mooi uit voor hoe nieuw het is, wees dan extra voorzichtig en haast je niet."
       }
     },
     verdict: {
@@ -922,9 +951,12 @@ function render(r) {
     var infoBtn = "", infoPanel = "";
     if (info) {
       const lb = t.plainLabels;
+      const lvl = info.level || "partial";
+      const lvlText = (t.levelLabels && t.levelLabels[lvl]) ? t.levelLabels[lvl] : "";
       infoBtn = '<button class="info-btn pulse" aria-label="info" onclick="toggleInfo(' + i + ')">i</button>';
       infoPanel =
         '<div class="info-panel" id="info-' + i + '">' +
+          (lvlText ? '<div class="lvl-badge ' + lvl + '">' + escapeHtml(lvlText) + '</div>' : '') +
           '<p><span class="tag-see">' + escapeHtml(lb.see) + ':</span> ' + escapeHtml(info.see) + '</p>' +
           '<p><span class="tag-blind">' + escapeHtml(lb.blind) + ':</span> ' + escapeHtml(info.blind) + '</p>' +
           '<p><span class="tag-diy">' + escapeHtml(lb.diy) + ':</span> ' + escapeHtml(info.diy) + '</p>' +

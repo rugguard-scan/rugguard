@@ -332,7 +332,7 @@
 
   <div class="feedback" id="feedback-block">
     <span id="t-feedback-text"></span>
-    <a id="t-feedback-link" href="https://docs.google.com/forms/d/e/1FAIpQLSfZxjU4cwxBPEgOPJSJgFyP6faX9XGI-kDqlq2j828dYLFmUw/viewform" target="_blank" rel="noopener"></a>
+    <a id="t-feedback-link" href="#" target="_blank" rel="noopener"></a>
   </div>
 
   <footer id="t-footer"></footer>
@@ -355,6 +355,13 @@
 // rechtstreeks met Helius. De geheime sleutel zit veilig op de server.
 const RPC = "/api/rpc";
 const DEX = "https://api.dexscreener.com/latest/dex/tokens/";
+
+// ▼▼▼ JOUW GOOGLE FORMULIER ▼▼▼
+// Plak hier de volledige link van je (oude) Google Formulier tussen de
+// aanhalingstekens. Dit is de ENIGE plek die je hoeft aan te passen.
+// Voorbeeld: "https://docs.google.com/forms/d/e/XXXXXXXX/viewform"
+const FEEDBACK_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSej3eCTiUUoS_4bUsvl3P6CPlWthv1MewZxi7BdsPrn_FZsZw/viewform";
+// ▲▲▲ JOUW GOOGLE FORMULIER ▲▲▲
 
 const T = {
   en: {
@@ -598,7 +605,16 @@ function applyStaticText() {
   document.getElementById("t-strip").textContent = t.strip;
   document.getElementById("t-footer").textContent = t.footer;
   document.getElementById("t-feedback-text").textContent = t.feedbackText;
-  document.getElementById("t-feedback-link").textContent = t.feedbackLink;
+  var fbLink = document.getElementById("t-feedback-link");
+  fbLink.textContent = t.feedbackLink;
+  // Zet de link uit de instelling bovenaan; verberg het blok als er geen link is.
+  var fbBlock = document.getElementById("feedback-block");
+  if (FEEDBACK_FORM_URL && FEEDBACK_FORM_URL.trim()) {
+    fbLink.href = FEEDBACK_FORM_URL.trim();
+    if (fbBlock) fbBlock.style.display = "";
+  } else {
+    if (fbBlock) fbBlock.style.display = "none";
+  }
   document.getElementById("t-helpbtn").textContent = t.helpBtn;
   document.getElementById("t-gloss-title").textContent = t.glossTitle;
   document.getElementById("t-gloss-intro").textContent = t.glossIntro;
@@ -668,17 +684,30 @@ function showToast(msg) {
   setTimeout(function(){ el.classList.remove("show"); }, 2200);
 }
 
+// Kleine helper: een fetch die na een aantal seconden vanzelf afbreekt,
+// zodat een vastgelopen server de app niet eindeloos laat hangen.
+function fetchWithTimeout(url, opts, ms) {
+  opts = opts || {};
+  var ctrl = new AbortController();
+  var timer = setTimeout(function(){ ctrl.abort(); }, ms || 12000);
+  return fetch(url, Object.assign({}, opts, { signal: ctrl.signal }))
+    .finally(function(){ clearTimeout(timer); });
+}
+
 async function rpc(method, params) {
-  const res = await fetch(RPC, {
+  const res = await fetchWithTimeout(RPC, {
     method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: method, params: params }),
-  });
+  }, 12000);
   if (!res.ok) throw new Error(T[lang].rpcErr);
-  return (await res.json()).result;
+  const json = await res.json();
+  // JSON-RPC fouten komen terug in json.error, niet als HTTP-fout.
+  if (json && json.error) throw new Error(T[lang].rpcErr);
+  return json.result;
 }
 async function getDex(mint) {
   try {
-    const res = await fetch(DEX + mint);
+    const res = await fetchWithTimeout(DEX + mint, {}, 12000);
     if (!res.ok) return null;
     const json = await res.json();
     if (!json.pairs || !json.pairs.length) return null;
@@ -706,10 +735,19 @@ function buildChecks(info, pair, holders, supply) {
   else if (liq < 50000) checks.push({ key: "liqWarn", level: "WARN", weight: 10, arg: liq });
   else checks.push({ key: "liqOk", level: "OK", weight: 0, arg: liq });
 
-  if (!holders || !supply) checks.push({ key: "holdUnknown", level: "UNKNOWN", weight: 0 });
+  // Aandeel van de 10 grootste eigenaren. We rekenen met de RUWE getallen
+  // (h.amount) en delen door de ruwe totale voorraad. Het veld uiAmount kan
+  // door de RPC-server als null worden teruggegeven; dan zou de oude code
+  // stiekem 0% berekenen en een gevaarlijke munt "goed verspreid" noemen.
+  const topRaw = holders ? holders.slice(0, 10).reduce(function(s, h){
+    var a = h && h.amount != null ? Number(h.amount) : (h && h.uiAmount != null ? Number(h.uiAmount) : NaN);
+    return s + (isNaN(a) ? 0 : a);
+  }, 0) : 0;
+  const haveHolders = holders && holders.length && topRaw > 0;
+  const haveSupply = supply != null && Number(supply) > 0;
+  if (!haveHolders || !haveSupply) checks.push({ key: "holdUnknown", level: "UNKNOWN", weight: 0 });
   else {
-    const top = holders.slice(0, 10).reduce(function(s, h){ return s + (h.uiAmount || 0); }, 0);
-    const pct = supply ? (top / supply * 100) : 0;
+    const pct = topRaw / Number(supply) * 100;
     if (pct > 70) checks.push({ key: "holdDanger", level: "DANGER", weight: 25, arg: pct });
     else if (pct > 40) checks.push({ key: "holdWarn", level: "WARN", weight: 12, arg: pct });
     else checks.push({ key: "holdOk", level: "OK", weight: 0, arg: pct });
@@ -748,7 +786,7 @@ async function analyze(mint) {
   const pair = await getDex(mint);
   let info = null, supply = null, holders = null;
   try { const acc = await rpc("getAccountInfo", [mint, { encoding: "jsonParsed" }]); info = acc && acc.value && acc.value.data && acc.value.data.parsed ? acc.value.data.parsed.info : null; } catch (e) {}
-  try { const s = await rpc("getTokenSupply", [mint]); supply = s && s.value ? s.value.uiAmount : null; } catch (e) {}
+  try { const s = await rpc("getTokenSupply", [mint]); supply = s && s.value ? (s.value.amount != null ? s.value.amount : s.value.uiAmount) : null; } catch (e) {}
   try { const h = await rpc("getTokenLargestAccounts", [mint]); holders = h ? h.value : null; } catch (e) {}
 
   const checks = buildChecks(info, pair, holders, supply);
@@ -851,7 +889,7 @@ function run() {
   const btn = document.getElementById("go");
   const t = T[lang];
 
-  if (mint.length < 32 || mint.length > 46) {
+  if (mint.length < 32 || mint.length > 44 || /[^1-9A-HJ-NP-Za-km-z]/.test(mint)) {
     lastResult = null;
     out.className = "show";
     out.innerHTML = '<div class="err">' + t.badAddr + '</div>';

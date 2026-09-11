@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -248,6 +248,16 @@
   .term h3 { font-size: 15.5px; color: var(--mint); margin-bottom: 5px; font-weight: 600; }
   .term p { font-size: 13.5px; color: var(--text-soft); line-height: 1.55; }
 
+  /* Over RugGuard */
+  .about-body p { font-size: 14.5px; color: var(--text-soft); line-height: 1.6; margin-bottom: 14px; }
+  .about-body p:last-child { margin-bottom: 0; }
+  .about-promise {
+    background: rgba(52,226,176,.10); border: 1px solid rgba(52,226,176,.35);
+    border-radius: 14px; padding: 16px 18px; margin-top: 4px;
+  }
+  .about-promise b { color: var(--mint); }
+  .about-promise p { margin-bottom: 0; color: var(--text-soft); }
+
   /* Share-knop + menu */
   .share-wrap { margin: 16px 0; text-align: center; position: relative; }
   .share-btn {
@@ -353,10 +363,11 @@
 <div class="wrap">
 
   <div class="topbar">
+    <button class="helpbtn" id="t-aboutbtn" onclick="openAbout()"></button>
     <button class="helpbtn" id="t-helpbtn" onclick="openGlossary()"></button>
     <div class="langswitch">
-      <button id="lang-en" class="active" onclick="setLang('en')">EN</button>
-      <button id="lang-nl" onclick="setLang('nl')">NL</button>
+      <button id="lang-nl" class="active" onclick="setLang('nl')">NL</button>
+      <button id="lang-en" onclick="setLang('en')">EN</button>
     </div>
   </div>
 
@@ -429,6 +440,14 @@
   </div>
 </div>
 
+<!-- Over RugGuard-overlay -->
+<div class="glossary-overlay" id="about" onclick="if(event.target===this)closeAbout()">
+  <div class="glossary-card">
+    <h2><span id="t-about-title"></span><button class="glossary-close" onclick="closeAbout()" aria-label="close">×</button></h2>
+    <div class="about-body" id="t-about-body"></div>
+  </div>
+</div>
+
 <div class="share-toast" id="share-toast"></div>
 
 <script>
@@ -447,7 +466,7 @@ const FEEDBACK_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSej3eCTiUUoS
 const T = {
   en: {
     tag: "Don't get rugged. Check any Solana coin in 10 seconds — before you buy in.",
-    intro: "New to this? No stress. Drop a coin's address and check it for the most common traps in seconds. The more you check, the sharper you get in the crypto space. Word unclear? Tap \u201cWord list\u201d up top.",
+    intro: "New to this? No stress. Paste a coin's address and check it in seconds for the most common tricks. Word unclear? Tap \u201cWord list\u201d at the top.",
     label: "Paste the coin's address here",
     button: "Check this coin",
     scanning: "Checking\u2026",
@@ -461,6 +480,11 @@ const T = {
     somethingWrong: "Something went wrong: ",
     unknownToken: "Unknown coin",
     helpBtn: "\u2139 Word list",
+    aboutBtn: "\u2661 About",
+    aboutTitle: "Why RugGuard exists",
+    aboutBody: "<p>RugGuard is built for beginners. It grew out of real experience: learning through mistakes and lost investments. That's where the idea came from \u2014 giving beginners the tools that didn't exist back then, so you can look at a coin with more insight before you jump in.</p>" +
+      "<p>RugGuard promises no wins and doesn't know everything. It gives you insight, so you can make more informed choices.</p>" +
+      "<div class='about-promise'><p><b>Always honest, the same for everyone.</b> RugGuard bases every check on public on-chain data \u2014 facts from the Solana blockchain, not opinions or hype. We never tweak a score: no project can pay for a better result.</p></div>",
     shareBtn: "Share this",
     shareResultLabel: "Share this result",
     shareAppLabel: "Share the app",
@@ -546,7 +570,7 @@ const T = {
     walletLabel: "Paste your wallet address here",
     walletPlaceholder: "Your Solana wallet address",
     walletButton: "Check my coins",
-    walletIntro: "See the coins already in your wallet and how risky each one looks. Paste your <b>public</b> wallet address \u2014 you never connect your wallet and never enter a password or secret key. RugGuard only reads what's already public on the blockchain.",
+    walletIntro: "See the coins already in your wallet and how risky each one looks. Paste your <b>public</b> wallet address \u2014 you never connect your wallet and never enter a password or secret key. RugGuard only reads what's already public on the blockchain.<br><br>Not sure where to find your address? In apps like Robinhood, Phantom or Solflare you can copy your wallet address and paste it here.",
     walletBadAddr: "That doesn't look like a valid Solana wallet address. It's usually a long string of 32\u201344 letters and numbers.",
     walletLoading: "Reading your wallet\u2026",
     walletCheckingN: function(done, total){ return "Checking your coins\u2026 " + done + " of " + total; },
@@ -577,7 +601,7 @@ const T = {
   },
   nl: {
     tag: "Laat je niet ruggen. Check elke Solana-munt in 10 seconden \u2014 voordat je instapt.",
-    intro: "Nieuw hierin? Geen stress. Plak het adres van een munt en check hem in seconden op de bekendste trucs. Hoe meer je checkt, hoe handiger je wordt in de cryptospace. Woord onduidelijk? Tik bovenaan op \u201cWoordenlijst\u201d.",
+    intro: "Nieuw hierin? Geen stress. Plak het adres van een munt en check hem in seconden op de bekendste trucs. Woord onduidelijk? Tik bovenaan op \u201cWoordenlijst\u201d.",
     label: "Plak hier het adres van de munt",
     button: "Check deze munt",
     scanning: "Bezig met checken\u2026",
@@ -591,6 +615,11 @@ const T = {
     somethingWrong: "Er ging iets mis: ",
     unknownToken: "Onbekende munt",
     helpBtn: "\u2139 Woordenlijst",
+    aboutBtn: "\u2661 Over",
+    aboutTitle: "Waarom RugGuard bestaat",
+    aboutBody: "<p>RugGuard is gebouwd voor beginners. Het ontstond uit de praktijk: leren door fouten en verloren investeringen. Daaruit kwam het idee om beginners de tools te geven die er toen niet waren \u2014 zodat je een crypto met meer inzicht bekijkt v\u00f3\u00f3rdat je erin stapt.</p>" +
+      "<p>RugGuard belooft geen successen en weet niet alles. Het geeft je inzicht, zodat je bewustere keuzes maakt.</p>" +
+      "<div class='about-promise'><p><b>Altijd eerlijk, voor iedereen gelijk.</b> RugGuard baseert elke check op openbare on-chain data \u2014 feiten van de Solana-blockchain, geen meningen of reclame. We sjoemelen nooit met een score: geen project kan betalen voor een beter resultaat.</p></div>",
     shareBtn: "Delen",
     shareResultLabel: "Deel dit resultaat",
     shareAppLabel: "Deel de app",
@@ -676,7 +705,7 @@ const T = {
     walletLabel: "Plak hier je wallet-adres",
     walletPlaceholder: "Je Solana wallet-adres",
     walletButton: "Check mijn munten",
-    walletIntro: "Zie de munten die al in je wallet zitten en hoe risicovol elke munt eruitziet. Plak je <b>openbare</b> wallet-adres \u2014 je koppelt je wallet nooit en vult nooit een wachtwoord of geheime sleutel in. RugGuard leest alleen wat al openbaar op de blockchain staat.",
+    walletIntro: "Zie de munten die al in je wallet zitten en hoe risicovol elke munt eruitziet. Plak je <b>openbare</b> wallet-adres \u2014 je koppelt je wallet nooit en vult nooit een wachtwoord of geheime sleutel in. RugGuard leest alleen wat al openbaar op de blockchain staat.<br><br>Weet je niet waar je je adres vindt? In apps zoals Robinhood, Phantom of Solflare kun je je wallet-adres kopi\u00ebren en hier plakken.",
     walletBadAddr: "Dit lijkt geen geldig Solana wallet-adres. Het is meestal een lange reeks van 32\u201344 letters en cijfers.",
     walletLoading: "Je wallet wordt gelezen\u2026",
     walletCheckingN: function(done, total){ return "Je munten worden gecheckt\u2026 " + done + " van " + total; },
@@ -707,7 +736,7 @@ const T = {
   }
 };
 
-let lang = "en";
+let lang = "nl";
 let lastResult = null;
 
 function setLang(l) {
@@ -745,6 +774,9 @@ function applyStaticText() {
   document.getElementById("wallet").placeholder = t.walletPlaceholder;
   document.getElementById("go-wallet").textContent = t.walletButton;
   document.getElementById("t-helpbtn").textContent = t.helpBtn;
+  document.getElementById("t-aboutbtn").textContent = t.aboutBtn;
+  document.getElementById("t-about-title").textContent = t.aboutTitle;
+  document.getElementById("t-about-body").innerHTML = t.aboutBody;
   document.getElementById("t-gloss-title").textContent = t.glossTitle;
   document.getElementById("t-gloss-intro").textContent = t.glossIntro;
   renderGlossary();
@@ -764,6 +796,12 @@ function openGlossary() {
 }
 function closeGlossary() {
   document.getElementById("glossary").classList.remove("open");
+}
+function openAbout() {
+  document.getElementById("about").classList.add("open");
+}
+function closeAbout() {
+  document.getElementById("about").classList.remove("open");
 }
 
 // Deel-menu openen/sluiten

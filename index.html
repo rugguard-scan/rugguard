@@ -730,6 +730,8 @@ const T = {
     balanceLoading: "Reading your wallet and prices\u2026",
     balanceEmpty: "We found no priced coins in this wallet. That can be normal \u2014 the wallet may only hold coins with no market yet.",
     balanceTotal: "Total value",
+    balanceTotalTop: function(shown){ return "Total of your " + shown + " largest holdings"; },
+    balanceTooMany: function(shown, total){ return "This wallet holds " + total + " coins \u2014 showing your " + shown + " largest."; },
     balanceCoins: function(n){ return n + (n === 1 ? " coin" : " coins"); },
     balanceNoPrice: "no price yet",
     balanceChartHint: "Tap a coin to open its chart on DexScreener (new tab).",
@@ -887,6 +889,8 @@ const T = {
     balanceLoading: "Je wallet en prijzen worden gelezen\u2026",
     balanceEmpty: "We vonden geen munten met een prijs in deze wallet. Dat kan normaal zijn \u2014 de wallet bevat misschien alleen munten zonder markt.",
     balanceTotal: "Totale waarde",
+    balanceTotalTop: function(shown){ return "Totaal over je " + shown + " grootste posities"; },
+    balanceTooMany: function(shown, total){ return "Deze wallet bevat " + total + " munten \u2014 we tonen je " + shown + " grootste."; },
     balanceCoins: function(n){ return n + (n === 1 ? " munt" : " munten"); },
     balanceNoPrice: "nog geen prijs",
     balanceChartHint: "Tik op een munt om de chart op DexScreener te openen (nieuw tabblad).",
@@ -1462,7 +1466,7 @@ function checkFromWallet(mint) {
 // schakelbaar). Klik op een munt -> opent de chart op DexScreener (nieuw tabblad).
 let balanceCurrency = "eur";   // "eur" of "usd"
 let eurPerUsd = null;          // wisselkoers, 1x opgehaald
-let lastBalance = null;        // { holdings:[{mint,symbol,name,amount,valueUsd}], totalUsd }
+let lastBalance = null;        // { holdings:[{mint,symbol,name,amount,valueUsd}], totalUsd, totalFound }
 
 // Wisselkoers USD->EUR ophalen. Lukt dit niet, dan tonen we in dollars.
 async function getEurRate() {
@@ -1503,6 +1507,7 @@ function runBalance() {
     }
     // Grootste posities eerst; beperken tot een behapbaar aantal.
     tokens.sort(function(a, b){ return b.amount - a.amount; });
+    const totalFound = tokens.length;
     const toPrice = tokens.slice(0, WALLET_MAX_CHECKS);
 
     const holdings = [];
@@ -1531,7 +1536,7 @@ function runBalance() {
       return b.valueUsd - a.valueUsd;
     });
 
-    lastBalance = { holdings: holdings, totalUsd: totalUsd };
+    lastBalance = { holdings: holdings, totalUsd: totalUsd, totalFound: totalFound };
     renderBalance();
     btn.disabled = false; btn.textContent = t.balanceButton;
   }).catch(function(err){
@@ -1576,11 +1581,16 @@ function renderBalance() {
       '<button class="' + (cur === "usd" ? "active" : "") + '" onclick="setBalanceCurrency(\'usd\')">' + escapeHtml(t.curUsd) + '</button>' +
     '</div>';
 
+  var totalFound = lastBalance.totalFound || h.length;
+  var capped = totalFound > WALLET_MAX_CHECKS;   // wallet heeft meer munten dan de limiet
+  var totalLabel = capped ? t.balanceTotalTop(h.length) : t.balanceTotal;
+  var totalSub = capped ? t.balanceTooMany(h.length, totalFound) : t.balanceCoins(h.length);
+
   const total =
     '<div class="bal-total">' +
-      '<div class="bal-total-label">' + escapeHtml(t.balanceTotal) + '</div>' +
+      '<div class="bal-total-label">' + escapeHtml(totalLabel) + '</div>' +
       '<div class="bal-total-value">' + escapeHtml(fmtMoney(lastBalance.totalUsd)) + '</div>' +
-      '<div class="bal-total-sub">' + escapeHtml(t.balanceCoins(h.length)) + '</div>' +
+      '<div class="bal-total-sub">' + escapeHtml(totalSub) + '</div>' +
     '</div>';
 
   const items = h.map(function(item){

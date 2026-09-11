@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RugGuard — Solana token safety check</title>
+<title>Veydor — Solana token safety check</title>
 <style>
   :root {
     /* Donkere, iets warme indigo-nacht i.p.v. pikzwart cliché */
@@ -105,6 +105,12 @@
   button.go:disabled { background: var(--surface-2); color: var(--muted); box-shadow: none; cursor: default; }
 
   .disclaimer { font-size: 12.5px; color: var(--muted); text-align: center; padding: 4px 6px 24px; }
+  .risk-link {
+    font-family: inherit; font-size: inherit; font-weight: 700;
+    color: var(--gold, #d3a24a); text-decoration: underline; text-underline-offset: 2px;
+    background: none; border: none; padding: 0; cursor: pointer;
+  }
+  .risk-link:hover { color: #e8c072; }
 
   #result { display: none; margin-bottom: 40px; }
   #result.show { display: block; }
@@ -228,6 +234,25 @@
   .full-disclaimer b { color: var(--coral); }
 
   .loading { text-align: center; color: var(--text-soft); padding: 30px; font-size: 15px; }
+
+  /* Veydor-V die zichzelf tekent tijdens het checken (merkmoment,
+     geen oordeel — de uitslag zelf blijft neutraal en kleurgecodeerd) */
+  .veydor-loader { display: flex; flex-direction: column; align-items: center; gap: 18px; padding: 34px 20px; }
+  .veydor-loader svg { width: 84px; height: 84px; }
+  .veydor-loader .vl-shield {
+    fill: #22345a; stroke: url(#vl-gold); stroke-width: 12; stroke-linejoin: round;
+    opacity: 0; animation: vl-shield-in .5s ease forwards;
+  }
+  .veydor-loader .vl-check {
+    fill: none; stroke: url(#vl-gold); stroke-width: 34;
+    stroke-linecap: round; stroke-linejoin: round;
+    stroke-dasharray: 320; stroke-dashoffset: 320;
+    animation: vl-draw 1.1s ease .35s forwards, vl-pulse 1.6s ease-in-out 1.5s infinite;
+  }
+  @keyframes vl-shield-in { to { opacity: 1; } }
+  @keyframes vl-draw { to { stroke-dashoffset: 0; } }
+  @keyframes vl-pulse { 0%,100% { opacity: 1; } 50% { opacity: .45; } }
+  .veydor-loader .vl-text { color: var(--text-soft); font-size: 15px; }
   .err { background: rgba(255,93,108,.12); border: 1px solid var(--coral-dim); color: #ffb3ba; border-radius: 14px; padding: 15px 17px; font-size: 14px; margin-bottom: 20px; }
 
   footer { text-align: center; color: var(--muted); font-size: 12.5px; padding: 22px 0 50px; border-top: 1px solid var(--line); }
@@ -248,7 +273,7 @@
   .term h3 { font-size: 15.5px; color: var(--mint); margin-bottom: 5px; font-weight: 600; }
   .term p { font-size: 13.5px; color: var(--text-soft); line-height: 1.55; }
 
-  /* Over RugGuard */
+  /* Over Veydor */
   .about-body p { font-size: 14.5px; color: var(--text-soft); line-height: 1.6; margin-bottom: 14px; }
   .about-body p:last-child { margin-bottom: 0; }
   .about-promise {
@@ -373,7 +398,7 @@
 
   <header>
     <div class="logo">
-      <svg class="logo-mark" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="RugGuard">
+      <svg class="logo-mark" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Veydor">
         <defs>
           <linearGradient id="lg-gold" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0" stop-color="#d3a24a"/>
@@ -382,13 +407,10 @@
         </defs>
         <path d="M256 92 L392 138 C392 138 392 250 392 296 C392 372 328 418 256 452 C184 418 120 372 120 296 C120 250 120 138 120 138 Z"
               fill="#22345a" stroke="url(#lg-gold)" stroke-width="12" stroke-linejoin="round"/>
-        <g transform="translate(256 272)">
-          <path d="M0 -92 L72 0 L0 92 L-72 0 Z" fill="none" stroke="url(#lg-gold)" stroke-width="10" stroke-linejoin="round"/>
-          <path d="M0 -46 L36 0 L0 46 L-36 0 Z" fill="url(#lg-gold)"/>
-          <path d="M-17 2 L-4 16 L20 -14" fill="none" stroke="#0f1830" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
-        </g>
+        <path d="M182 214 L242 342 L340 176" fill="none" stroke="url(#lg-gold)"
+              stroke-width="34" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
-      <span class="logo-word">RugGuard</span>
+      <span class="logo-word">Veydor</span>
     </div>
     <div class="tag" id="t-tag"></div>
   </header>
@@ -440,11 +462,19 @@
   </div>
 </div>
 
-<!-- Over RugGuard-overlay -->
+<!-- Over Veydor-overlay -->
 <div class="glossary-overlay" id="about" onclick="if(event.target===this)closeAbout()">
   <div class="glossary-card">
     <h2><span id="t-about-title"></span><button class="glossary-close" onclick="closeAbout()" aria-label="close">×</button></h2>
     <div class="about-body" id="t-about-body"></div>
+  </div>
+</div>
+
+<!-- Risico/disclaimer-overlay -->
+<div class="glossary-overlay" id="disclaimer" onclick="if(event.target===this)closeDisclaimer()">
+  <div class="glossary-card">
+    <h2><span id="t-disc-title"></span><button class="glossary-close" onclick="closeDisclaimer()" aria-label="close">×</button></h2>
+    <div class="about-body" id="t-disc-body"></div>
   </div>
 </div>
 
@@ -470,8 +500,8 @@ const T = {
     label: "Paste the coin's address here",
     button: "Check this coin",
     scanning: "Checking\u2026",
-    strip: "Not financial advice \u00b7 no promise of safety or profit \u00b7 you decide, at your own risk",
-    footer: "RugGuard reads public blockchain data. A clean result is not a promise \u2014 never invest more than you can afford to lose completely.",
+    strip: "Crypto can be extremely volatile * you can lose everything * not financial advice * you decide, at your own <button class='risk-link' onclick='openDisclaimer()'>risk</button>",
+    footer: "Veydor reads public blockchain data. A clean result is not a promise \u2014 never invest more than you can afford to lose completely.",
     loading: "Reading the coin's data and checking\u2026",
     scoreLabel: "Risk score",
     scoreHint: "higher = riskier",
@@ -481,22 +511,23 @@ const T = {
     unknownToken: "Unknown coin",
     helpBtn: "\u2139 Word list",
     aboutBtn: "\u2661 About",
-    aboutTitle: "Why RugGuard exists",
-    aboutBody: "<p>RugGuard is built for beginners. It grew out of real experience: learning through mistakes and lost investments. That's where the idea came from \u2014 giving beginners the tools that didn't exist back then, so you can look at a coin with more insight before you jump in.</p>" +
-      "<p>RugGuard promises no wins and doesn't know everything. It gives you insight, so you can make more informed choices.</p>" +
-      "<div class='about-promise'><p><b>Always honest, the same for everyone.</b> RugGuard bases every check on public on-chain data \u2014 facts from the Solana blockchain, not opinions or hype.</p></div>",
+    aboutTitle: "Why Veydor exists",
+    disclaimerTitle: "Risks \u2014 read before you invest",
+    aboutBody: "<p>Veydor is built for beginners. It grew out of real experience: learning through mistakes and lost investments. That's where the idea came from \u2014 giving beginners the tools that didn't exist back then, so you can look at a coin with more insight before you jump in.</p>" +
+      "<p>Veydor promises no wins and doesn't know everything. It gives you insight, so you can make more informed choices.</p>" +
+      "<div class='about-promise'><p><b>Always honest, the same for everyone.</b> Veydor bases every check on public on-chain data \u2014 facts from the Solana blockchain, not opinions or hype.</p></div>",
     shareBtn: "Share this",
     shareResultLabel: "Share this result",
     shareAppLabel: "Share the app",
     shareCopied: "Copied! Paste it anywhere.",
-    shareResultText: function(name, score){ return "I just ran " + name + " through RugGuard \u2014 risk score " + score + "/100. Always check before you buy in \ud83d\udee1\ufe0f rugguard-check.netlify.app"; },
-    shareAppText: "Thinking about a Solana coin? Run a free 10-second safety check first \u2014 RugGuard shows the red flags before you buy in \ud83d\udee1\ufe0f rugguard-check.netlify.app",
+    shareResultText: function(name, score){ return "I just ran " + name + " through Veydor \u2014 risk score " + score + "/100. Always check before you buy in \ud83d\udee1\ufe0f veydor.xyz"; },
+    shareAppText: "Thinking about a Solana coin? Run a free 10-second safety check first \u2014 Veydor shows the red flags before you buy in \ud83d\udee1\ufe0f veydor.xyz",
     feedbackText: "Got a minute? Tell us what you think \u2014 it helps us improve.",
     feedbackLink: "Give feedback",
-    disclaimer: "<b>Read this before you invest.</b> RugGuard spots common traps, but it can't see everything \u2014 the hype can fade, the market can turn, and some tricks are hidden. A coin with no red flags can still become worthless. This is not financial advice and no promise of safety or profit. You decide, entirely at your own risk; we are not liable for any loss. Never invest more than you can afford to lose completely.",
+    disclaimer: "<b>Read this before you invest.</b> Crypto can be extremely volatile: prices can fall fast and hard, and you can lose your entire stake. Veydor spots common traps, but it can't see everything \u2014 the hype can fade, the market can turn, and some tricks are hidden. A coin with no red flags can still become worthless. This is not financial advice and no promise of safety or profit.<br><br>Veydor is an informational tool. The result of a coin check or wallet check is not a recommendation to buy, sell or hold. Veydor is in no way liable for any funds committed by the user following a coin-check result or wallet-check result, nor for any loss or damage arising from it. The user is fully responsible for all actions they take during or after using the Veydor tool. You decide, entirely at your own risk. Never invest more than you can afford to lose completely.",
     scoreExplain: "<b>What this score means.</b> This is a quick safety check, not a promise. A low score means we didn't find the most common traps \u2014 it does NOT mean the coin is safe or that you'll make money. Even a deep check can't catch everything.",
     whyTitle: "Why no check is ever 100% sure",
-    whyBody: "Think of RugGuard like having a house checked before you buy it. A good inspector spots the obvious problems \u2014 a leaking roof, bad wiring \u2014 and that's really useful. But they can't promise nothing will ever go wrong, and can't see every hidden issue behind the walls.\n\nChecking a coin works the same way. We read what's visible on the blockchain and flag the known dangers. But we can't see the future, we don't know the creators' plans, and scammers keep inventing new tricks. A clean result lowers your risk \u2014 it doesn't remove it.\n\nSo the rule is simple: use this as one helper among several, look into things yourself, and only ever invest money you can afford to lose completely.",
+    whyBody: "Think of Veydor like having a house checked before you buy it. A good inspector spots the obvious problems \u2014 a leaking roof, bad wiring \u2014 and that's really useful. But they can't promise nothing will ever go wrong, and can't see every hidden issue behind the walls.\n\nChecking a coin works the same way. We read what's visible on the blockchain and flag the known dangers. But we can't see the future, we don't know the creators' plans, and scammers keep inventing new tricks. A clean result lowers your risk \u2014 it doesn't remove it.\n\nSo the rule is simple: use this as one helper among several, look into things yourself, and only ever invest money you can afford to lose completely.",
     plainLabels: { see: "What we check", blind: "What we can't see", diy: "How to check it yourself" },
     levelLabels: { easy: "You can check this yourself", partial: "Partly checkable", hard: "Hard \u2014 just be extra careful" },
     plain: {
@@ -570,7 +601,7 @@ const T = {
     walletLabel: "Paste your wallet address here",
     walletPlaceholder: "Your Solana wallet address",
     walletButton: "Check my coins",
-    walletIntro: "See the coins already in your wallet and how risky each one looks. Paste your <b>public</b> wallet address \u2014 you never connect your wallet and never enter a password or secret key. RugGuard only reads what's already public on the blockchain.<br><br>Not sure where to find your address? In apps like Robinhood, Phantom or Solflare you can copy your wallet address and paste it here.",
+    walletIntro: "See the coins already in your wallet and how risky each one looks. Paste your <b>public</b> wallet address \u2014 you never connect your wallet and never enter a password or secret key. Veydor only reads what's already public on the blockchain.<br><br>Not sure where to find your address? In apps like Robinhood, Phantom or Solflare you can copy your wallet address and paste it here.",
     walletBadAddr: "That doesn't look like a valid Solana wallet address. It's usually a long string of 32\u201344 letters and numbers.",
     walletLoading: "Reading your wallet\u2026",
     walletCheckingN: function(done, total){ return "Checking your coins\u2026 " + done + " of " + total; },
@@ -585,8 +616,8 @@ const T = {
       ["Coin / token", "A unit of value on the blockchain. A \u201cmemecoin\u201d is a coin made mostly for fun or hype, often with no real use behind it."],
       ["Blockchain", "A public digital record that stores every transaction. Anyone can look; no one can secretly change the past. Solana is one such blockchain."],
       ["Wallet", "Your digital wallet holds your coins. It has an address others can see, and a secret key only you should have."],
-      ["Coin address", "The unique address of a coin on the blockchain \u2014 like an ID card for that coin. You paste it into RugGuard to check it."],
-      ["Rug pull", "A scam where the creators suddenly pull out all the money or dump their coins, leaving yours worthless. RugGuard is named after guarding against this."],
+      ["Coin address", "The unique address of a coin on the blockchain \u2014 like an ID card for that coin. You paste it into Veydor to check it."],
+      ["Rug pull", "A scam where the creators suddenly pull out all the money or dump their coins, leaving yours worthless. Guarding you against this is exactly what Veydor is built for."],
       ["Liquidity", "The pool of money available to buy and sell a coin. Lots means you can sell easily; very little means you might get stuck unable to sell."],
       ["Locked / burned liquidity", "\u201cLocked\u201d means the money pool is held for a time so creators can't just take it. \u201cBurned\u201d means it's gone from their control for good. Both protect buyers."],
       ["Making new coins (mint)", "The power to create new coins. If creators can still do it, they can make more and lower the value of yours. Safer coins have this switched off."],
@@ -605,8 +636,8 @@ const T = {
     label: "Plak hier het adres van de munt",
     button: "Check deze munt",
     scanning: "Bezig met checken\u2026",
-    strip: "Geen financieel advies \u00b7 geen belofte van veiligheid of winst \u00b7 jij beslist, op eigen risico",
-    footer: "RugGuard leest openbare blockchain-gegevens. Een schoon resultaat is geen belofte \u2014 investeer nooit meer dan je volledig kunt missen.",
+    strip: "Crypto\u2019s kunnen extreem volatiel zijn * je kunt alles verliezen * geen financieel advies * jij beslist, op eigen <button class='risk-link' onclick='openDisclaimer()'>risico</button>",
+    footer: "Veydor leest openbare blockchain-gegevens. Een schoon resultaat is geen belofte \u2014 investeer nooit meer dan je volledig kunt missen.",
     loading: "Gegevens van de munt lezen en checken\u2026",
     scoreLabel: "Risicoscore",
     scoreHint: "hoger = risicovoller",
@@ -616,22 +647,23 @@ const T = {
     unknownToken: "Onbekende munt",
     helpBtn: "\u2139 Woordenlijst",
     aboutBtn: "\u2661 Over",
-    aboutTitle: "Waarom RugGuard bestaat",
-    aboutBody: "<p>RugGuard is gebouwd voor beginners. Het ontstond uit de praktijk: leren door fouten en verloren investeringen. Daaruit kwam het idee om beginners de tools te geven die er toen niet waren \u2014 zodat je een crypto met meer inzicht bekijkt v\u00f3\u00f3rdat je erin stapt.</p>" +
-      "<p>RugGuard belooft geen successen en weet niet alles. Het geeft je inzicht, zodat je bewustere keuzes maakt.</p>" +
-      "<div class='about-promise'><p><b>Altijd eerlijk, voor iedereen gelijk.</b> RugGuard baseert elke check op openbare on-chain data \u2014 feiten van de Solana-blockchain, geen meningen of reclame.</p></div>",
+    aboutTitle: "Waarom Veydor bestaat",
+    disclaimerTitle: "Risico\u2019s \u2014 lees dit voordat je investeert",
+    aboutBody: "<p>Veydor is gebouwd voor beginners. Het ontstond uit de praktijk: leren door fouten en verloren investeringen. Daaruit kwam het idee om beginners de tools te geven die er toen niet waren \u2014 zodat je een crypto met meer inzicht bekijkt v\u00f3\u00f3rdat je erin stapt.</p>" +
+      "<p>Veydor belooft geen successen en weet niet alles. Het geeft je inzicht, zodat je bewustere keuzes maakt.</p>" +
+      "<div class='about-promise'><p><b>Altijd eerlijk, voor iedereen gelijk.</b> Veydor baseert elke check op openbare on-chain data \u2014 feiten van de Solana-blockchain, geen meningen of reclame.</p></div>",
     shareBtn: "Delen",
     shareResultLabel: "Deel dit resultaat",
     shareAppLabel: "Deel de app",
     shareCopied: "Gekopieerd! Plak het waar je wilt.",
-    shareResultText: function(name, score){ return "Ik checkte " + name + " even met RugGuard \u2014 risicoscore " + score + "/100. Altijd checken voordat je instapt \ud83d\udee1\ufe0f rugguard-check.netlify.app"; },
-    shareAppText: "Ga je iets doen met een Solana-munt? Doe eerst een gratis check van 10 seconden \u2014 RugGuard laat de rode vlaggen zien voordat je instapt \ud83d\udee1\ufe0f rugguard-check.netlify.app",
+    shareResultText: function(name, score){ return "Ik checkte " + name + " even met Veydor \u2014 risicoscore " + score + "/100. Altijd checken voordat je instapt \ud83d\udee1\ufe0f veydor.xyz"; },
+    shareAppText: "Ga je iets doen met een Solana-munt? Doe eerst een gratis check van 10 seconden \u2014 Veydor laat de rode vlaggen zien voordat je instapt \ud83d\udee1\ufe0f veydor.xyz",
     feedbackText: "Heb je een minuutje? Laat weten wat je ervan vindt \u2014 zo maken we de app beter.",
     feedbackLink: "Geef feedback",
-    disclaimer: "<b>Lees dit voordat je investeert.</b> RugGuard vindt veelvoorkomende trucs, maar kan niet alles zien \u2014 de hype kan wegvallen, de markt kan keren, en sommige trucs zijn verborgen. Een munt zonder rode vlaggen kan alsnog waardeloos worden. Dit is geen financieel advies en geen belofte van veiligheid of winst. Jij beslist, volledig op eigen risico; wij zijn niet aansprakelijk voor verlies. Investeer nooit meer dan je volledig kunt missen.",
+    disclaimer: "<b>Lees dit voordat je investeert.</b> Crypto\u2019s kunnen extreem volatiel zijn: koersen kunnen snel en sterk dalen, en je kunt je volledige inleg verliezen. Veydor vindt veelvoorkomende trucs, maar kan niet alles zien \u2014 de hype kan wegvallen, de markt kan keren, en sommige trucs zijn verborgen. Een munt zonder rode vlaggen kan alsnog waardeloos worden. Dit is geen financieel advies en geen belofte van veiligheid of winst.<br><br>Veydor is een informatief hulpmiddel. De uitslag van een munt-check of wallet-check is geen aanbeveling om te kopen, verkopen of aan te houden. Veydor is op geen enkele wijze aansprakelijk voor het inleggen van gelden door de gebruiker naar aanleiding van een munt-check-uitslag of wallet-check-uitslag, noch voor enig verlies of schade die daaruit voortvloeit. De gebruiker is volledig zelf verantwoordelijk voor alle handelingen die hij of zij verricht tijdens of na het gebruik van de Veydor-tool. Jij beslist, volledig op eigen risico. Investeer nooit meer dan je volledig kunt missen.",
     scoreExplain: "<b>Wat deze score betekent.</b> Dit is een snelle veiligheidscheck, geen belofte. Een lage score betekent dat we de bekendste trucs niet vonden \u2014 het betekent NIET dat de munt veilig is of dat je geld gaat verdienen. Zelfs een diepe check vangt niet alles.",
     whyTitle: "Waarom geen enkele check 100% zeker is",
-    whyBody: "Zie RugGuard als een huis laten keuren voordat je het koopt. Een goede keurder ziet de duidelijke problemen \u2014 een lekkend dak, slechte bedrading \u2014 en dat is echt nuttig. Maar hij kan niet beloven dat er nooit iets misgaat, en ziet niet elk verborgen gebrek achter de muren.\n\nEen munt checken werkt net zo. We lezen wat zichtbaar is op de blockchain en wijzen de bekende gevaren aan. Maar we kunnen niet in de toekomst kijken, we kennen de plannen van de makers niet, en oplichters bedenken steeds nieuwe trucs. Een schoon resultaat verlaagt je risico \u2014 het neemt het niet weg.\n\nDe regel is dus simpel: gebruik dit als \u00e9\u00e9n hulpje naast andere, zoek zelf dingen uit, en investeer alleen geld dat je volledig kunt missen.",
+    whyBody: "Zie Veydor als een huis laten keuren voordat je het koopt. Een goede keurder ziet de duidelijke problemen \u2014 een lekkend dak, slechte bedrading \u2014 en dat is echt nuttig. Maar hij kan niet beloven dat er nooit iets misgaat, en ziet niet elk verborgen gebrek achter de muren.\n\nEen munt checken werkt net zo. We lezen wat zichtbaar is op de blockchain en wijzen de bekende gevaren aan. Maar we kunnen niet in de toekomst kijken, we kennen de plannen van de makers niet, en oplichters bedenken steeds nieuwe trucs. Een schoon resultaat verlaagt je risico \u2014 het neemt het niet weg.\n\nDe regel is dus simpel: gebruik dit als \u00e9\u00e9n hulpje naast andere, zoek zelf dingen uit, en investeer alleen geld dat je volledig kunt missen.",
     plainLabels: { see: "Wat we checken", blind: "Wat we niet kunnen zien", diy: "Zo check je het zelf" },
     levelLabels: { easy: "Dit kun je zelf checken", partial: "Deels te checken", hard: "Lastig \u2014 wees gewoon extra voorzichtig" },
     plain: {
@@ -705,7 +737,7 @@ const T = {
     walletLabel: "Plak hier je wallet-adres",
     walletPlaceholder: "Je Solana wallet-adres",
     walletButton: "Check mijn munten",
-    walletIntro: "Zie de munten die al in je wallet zitten en hoe risicovol elke munt eruitziet. Plak je <b>openbare</b> wallet-adres \u2014 je koppelt je wallet nooit en vult nooit een wachtwoord of geheime sleutel in. RugGuard leest alleen wat al openbaar op de blockchain staat.<br><br>Weet je niet waar je je adres vindt? In apps zoals Robinhood, Phantom of Solflare kun je je wallet-adres kopi\u00ebren en hier plakken.",
+    walletIntro: "Zie de munten die al in je wallet zitten en hoe risicovol elke munt eruitziet. Plak je <b>openbare</b> wallet-adres \u2014 je koppelt je wallet nooit en vult nooit een wachtwoord of geheime sleutel in. Veydor leest alleen wat al openbaar op de blockchain staat.<br><br>Weet je niet waar je je adres vindt? In apps zoals Robinhood, Phantom of Solflare kun je je wallet-adres kopi\u00ebren en hier plakken.",
     walletBadAddr: "Dit lijkt geen geldig Solana wallet-adres. Het is meestal een lange reeks van 32\u201344 letters en cijfers.",
     walletLoading: "Je wallet wordt gelezen\u2026",
     walletCheckingN: function(done, total){ return "Je munten worden gecheckt\u2026 " + done + " van " + total; },
@@ -720,8 +752,8 @@ const T = {
       ["Munt / token", "Een eenheid van waarde op de blockchain. Een \u201cmemecoin\u201d is een munt die vooral voor de lol of hype is gemaakt, vaak zonder echt nut erachter."],
       ["Blockchain", "Een openbaar digitaal register dat elke transactie bewaart. Iedereen kan kijken; niemand kan het verleden stiekem veranderen. Solana is zo'n blockchain."],
       ["Wallet / portemonnee", "Je digitale portemonnee bewaart je munten. Hij heeft een adres dat anderen kunnen zien, en een geheime sleutel die alleen jij mag hebben."],
-      ["Muntadres", "Het unieke adres van een munt op de blockchain \u2014 als een identiteitsbewijs van die munt. Je plakt het in RugGuard om te checken."],
-      ["Rug pull", "Een oplichttruc waarbij de makers plots al het geld weghalen of hun munten dumpen, zodat die van jou waardeloos worden. RugGuard is genoemd naar het beschermen hiertegen."],
+      ["Muntadres", "Het unieke adres van een munt op de blockchain \u2014 als een identiteitsbewijs van die munt. Je plakt het in Veydor om te checken."],
+      ["Rug pull", "Een oplichttruc waarbij de makers plots al het geld weghalen of hun munten dumpen, zodat die van jou waardeloos worden. Jou hiertegen beschermen is precies waarvoor Veydor is gemaakt."],
       ["Liquiditeit", "De pot met geld die beschikbaar is om een munt te kopen en verkopen. Veel betekent makkelijk verkopen; heel weinig betekent dat je vast kunt komen te zitten."],
       ["Vastgezette / verbrande liquiditeit", "\u201cVastgezet\u201d betekent dat de geldpot een tijd op slot zit zodat de makers hem niet zomaar kunnen pakken. \u201cVerbrand\u201d betekent voorgoed uit hun macht. Allebei beschermen kopers."],
       ["Nieuwe munten maken (mint)", "De macht om nieuwe munten te maken. Kunnen de makers het nog, dan kunnen ze meer maken en de waarde van die van jou verlagen. Veiliger munten hebben dit uit."],
@@ -754,7 +786,9 @@ function applyStaticText() {
   document.getElementById("t-intro").innerHTML = t.intro;
   document.getElementById("t-label").textContent = t.label;
   document.getElementById("go").textContent = t.button;
-  document.getElementById("t-strip").textContent = t.strip;
+  document.getElementById("t-strip").innerHTML = t.strip;
+  document.getElementById("t-disc-title").textContent = t.disclaimerTitle;
+  document.getElementById("t-disc-body").innerHTML = t.disclaimer;
   document.getElementById("t-footer").textContent = t.footer;
   document.getElementById("t-feedback-text").textContent = t.feedbackText;
   var fbLink = document.getElementById("t-feedback-link");
@@ -802,6 +836,12 @@ function openAbout() {
 }
 function closeAbout() {
   document.getElementById("about").classList.remove("open");
+}
+function openDisclaimer() {
+  document.getElementById("disclaimer").classList.add("open");
+}
+function closeDisclaimer() {
+  document.getElementById("disclaimer").classList.remove("open");
 }
 
 // Deel-menu openen/sluiten
@@ -1068,7 +1108,7 @@ function run() {
 
   btn.disabled = true; btn.textContent = t.scanning;
   out.className = "show";
-  out.innerHTML = '<div class="loading">' + t.loading + '</div>';
+  out.innerHTML = veydorLoader(t.loading);
 
   analyze(mint).then(function(r){
     lastResult = r;
@@ -1145,7 +1185,7 @@ function runWallet() {
 
   btn.disabled = true; btn.textContent = t.scanning;
   out.className = "show";
-  out.innerHTML = '<div class="loading">' + t.walletLoading + '</div>';
+  out.innerHTML = veydorLoader(t.walletLoading);
 
   getWalletTokens(owner).then(async function(tokens){
     if (!tokens.length) {
@@ -1225,6 +1265,21 @@ function checkFromWallet(mint) {
 
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, function(m){ return ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" })[m]; });
+}
+
+// Merkmoment tijdens het checken: de Veydor-V tekent zichzelf. Puur laad-animatie,
+// geen oordeel — de uitslag daarna is neutraal en kleurgecodeerd.
+function veydorLoader(text) {
+  return '<div class="veydor-loader">' +
+    '<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Veydor">' +
+      '<defs><linearGradient id="vl-gold" x1="0" y1="0" x2="1" y2="1">' +
+        '<stop offset="0" stop-color="#d3a24a"/><stop offset="1" stop-color="#a9781f"/>' +
+      '</linearGradient></defs>' +
+      '<path class="vl-shield" d="M256 92 L392 138 C392 138 392 250 392 296 C392 372 328 418 256 452 C184 418 120 372 120 296 C120 250 120 138 120 138 Z"/>' +
+      '<path class="vl-check" d="M182 214 L242 342 L340 176"/>' +
+    '</svg>' +
+    '<div class="vl-text">' + escapeHtml(text) + '</div>' +
+  '</div>';
 }
 
 document.getElementById("mint").addEventListener("keydown", function(e){ if (e.key === "Enter") run(); });

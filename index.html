@@ -255,7 +255,7 @@
   .veydor-loader .vl-text { color: var(--text-soft); font-size: 15px; }
   .err { background: rgba(255,93,108,.12); border: 1px solid var(--coral-dim); color: #ffb3ba; border-radius: 14px; padding: 15px 17px; font-size: 14px; margin-bottom: 20px; }
 
-  footer { text-align: center; color: var(--muted); font-size: 12.5px; padding: 22px 0 50px; border-top: 1px solid var(--line); }
+  footer { text-align: center; color: var(--muted); font-size: 12.5px; padding: 22px 0 50px; border-top: 1px solid var(--line); max-width: 520px; margin: 0 auto; line-height: 1.5; text-wrap: balance; }
 
   /* Begrippenlijst-overlay */
   .glossary-overlay { display: none; position: fixed; inset: 0; background: rgba(8,6,18,.7); backdrop-filter: blur(3px); z-index: 50; padding: 20px; overflow-y: auto; }
@@ -325,12 +325,38 @@
   }
   .feedback a:hover { background: var(--mint); color: #0b1220; }
 
+  /* Donatie-blok \u2014 ingetogen, in de stijl van de footer */
+  .donate {
+    text-align: center; max-width: 460px; margin: 0 auto 24px;
+    padding: 4px 6px;
+  }
+  .donate-title { font-size: 13px; font-weight: 700; color: var(--text-soft); margin-bottom: 5px; }
+  .donate-text { font-size: 12px; color: var(--muted); line-height: 1.5; margin-bottom: 12px; }
+  .donate-addr-row {
+    display: flex; align-items: stretch; gap: 6px; max-width: 400px; margin: 0 auto;
+    flex-wrap: wrap; justify-content: center;
+  }
+  .donate-addr {
+    flex: 1 1 220px; min-width: 0; font-family: "Courier New", monospace; font-size: 11px;
+    color: var(--muted); background: var(--bg-2); border: 1px solid var(--line);
+    border-radius: 8px; padding: 8px 10px; overflow: hidden; text-overflow: ellipsis;
+    white-space: nowrap; text-align: left;
+  }
+  .donate-copy {
+    flex: 0 0 auto; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer;
+    color: var(--text-soft); background: var(--surface); border: 1px solid var(--line);
+    border-radius: 8px; padding: 8px 14px; transition: border-color .15s, color .15s;
+  }
+  .donate-copy:hover { border-color: var(--mint); color: var(--mint); }
+
+
   /* Modus-tabs: munt checken / wallet checken */
-  .modetabs { display: flex; gap: 8px; margin-bottom: 12px; }
+  .modetabs { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
   .modetabs button {
-    flex: 1; padding: 12px 10px; border: 1px solid var(--line);
+    flex: 1 1 0; min-width: 90px; padding: 11px 8px; border: 1px solid var(--line);
     border-radius: 14px; background: var(--surface); color: var(--muted);
-    font-size: 14px; font-weight: 600; cursor: pointer; transition: all .15s;
+    font-size: 13px; font-weight: 600; cursor: pointer; transition: all .15s;
+    white-space: nowrap;
   }
   .modetabs button:hover { color: var(--text-soft); border-color: var(--violet); }
   .modetabs button.active {
@@ -376,6 +402,50 @@
   .pf-verdict { font-size: 13px; color: var(--text-soft); margin-top: 3px; }
   .pf-arrow { flex-shrink: 0; color: var(--muted); font-size: 20px; }
 
+  /* Saldo & charts */
+  .cur-toggle { display: flex; justify-content: center; gap: 6px; margin-bottom: 16px; }
+  .cur-toggle button {
+    font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer;
+    padding: 7px 18px; border: 1px solid var(--line); border-radius: 999px;
+    background: var(--surface); color: var(--muted); transition: all .15s;
+  }
+  .cur-toggle button:hover:not(:disabled) { color: var(--text-soft); border-color: var(--violet); }
+  .cur-toggle button.active { background: var(--violet); color: #fff; border-color: transparent; }
+  .cur-toggle button:disabled { opacity: .4; cursor: not-allowed; }
+  .bal-total {
+    text-align: center; background: var(--surface); border: 1px solid var(--line);
+    border-radius: 18px; padding: 22px 16px; margin-bottom: 16px;
+  }
+  .bal-total-label { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .bal-total-value { font-size: 38px; font-weight: 800; color: var(--text); line-height: 1; }
+  .bal-total-sub { font-size: 13px; color: var(--text-soft); margin-top: 8px; }
+  .bal-item {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 14px; padding: 13px 16px; margin-bottom: 9px;
+    cursor: pointer; transition: border-color .15s, transform .1s;
+  }
+  .bal-item:hover { border-color: var(--violet); transform: translateY(-1px); }
+  .bal-body { flex: 1; min-width: 0; }
+  .bal-name { font-size: 15px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bal-amount { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
+  .bal-value { font-size: 15px; font-weight: 700; color: var(--text); white-space: nowrap; }
+
+  /* Bevestiging externe site */
+  .dex-actions { display: flex; gap: 10px; margin-top: 20px; }
+  .dex-actions .dex-cancel, .dex-actions .dex-go {
+    flex: 1; text-align: center; font-family: inherit; font-size: 15px; font-weight: 700;
+    padding: 13px 16px; border-radius: 13px; cursor: pointer; text-decoration: none;
+    transition: transform .1s, box-shadow .2s, border-color .15s;
+  }
+  .dex-actions .dex-cancel { background: var(--surface); color: var(--text-soft); border: 1px solid var(--line); }
+  .dex-actions .dex-cancel:hover { border-color: var(--violet); color: var(--text); }
+  .dex-actions .dex-go {
+    background: linear-gradient(135deg, var(--violet), #6f4ff0); color: #fff; border: none;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .dex-actions .dex-go:hover { transform: translateY(-1px); box-shadow: var(--glow-violet); }
+
   @media (max-width: 560px) {
     .scan-row { flex-direction: column; }
     .logo { font-size: 28px; }
@@ -420,6 +490,7 @@
   <div class="modetabs">
     <button id="tab-coin" class="active" onclick="setMode('coin')"></button>
     <button id="tab-wallet" onclick="setMode('wallet')"></button>
+    <button id="tab-balance" onclick="setMode('balance')"></button>
   </div>
 
   <div class="scan" id="scan-coin">
@@ -440,6 +511,15 @@
     </div>
   </div>
 
+  <div class="scan" id="scan-balance" style="display:none">
+    <div class="wallet-intro" id="t-balance-intro"></div>
+    <label for="balance-wallet" id="t-balance-label"></label>
+    <div class="scan-row">
+      <input id="balance-wallet" type="text" spellcheck="false" />
+      <button class="go" id="go-balance" onclick="runBalance()"></button>
+    </div>
+  </div>
+
   <div class="disclaimer" id="t-strip"></div>
 
   <div id="result"></div>
@@ -447,6 +527,15 @@
   <div class="feedback" id="feedback-block">
     <span id="t-feedback-text"></span>
     <a id="t-feedback-link" href="#" target="_blank" rel="noopener"></a>
+  </div>
+
+  <div class="donate" id="donate-block">
+    <div class="donate-title" id="t-donate-title"></div>
+    <div class="donate-text" id="t-donate-text"></div>
+    <div class="donate-addr-row">
+      <code class="donate-addr" id="donate-addr"></code>
+      <button class="donate-copy" id="t-donate-copy" onclick="copyDonateAddr()"></button>
+    </div>
   </div>
 
   <footer id="t-footer"></footer>
@@ -478,6 +567,18 @@
   </div>
 </div>
 
+<!-- Bevestiging: externe site (DexScreener) -->
+<div class="glossary-overlay" id="dexconfirm" onclick="if(event.target===this)closeDexConfirm()">
+  <div class="glossary-card dex-card">
+    <h2><span id="t-dex-title"></span><button class="glossary-close" onclick="closeDexConfirm()" aria-label="close">×</button></h2>
+    <div class="about-body"><p id="t-dex-body"></p></div>
+    <div class="dex-actions">
+      <button class="dex-cancel" id="t-dex-cancel" onclick="closeDexConfirm()"></button>
+      <a class="dex-go" id="dex-go-link" href="#" target="_blank" rel="noopener" onclick="closeDexConfirm()"></a>
+    </div>
+  </div>
+</div>
+
 <div class="share-toast" id="share-toast"></div>
 
 <script>
@@ -493,6 +594,13 @@ const DEX = "https://api.dexscreener.com/latest/dex/tokens/";
 const FEEDBACK_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSej3eCTiUUoS_4bUsvl3P6CPlWthv1MewZxi7BdsPrn_FZsZw/viewform";
 // ▲▲▲ JOUW GOOGLE FORMULIER ▲▲▲
 
+// ▼▼▼ VEYDOR DONATIE-WALLET (Solana) ▼▼▼
+// Het adres waar vrijwillige donaties naartoe gaan. Laat leeg ("") om het
+// donatie-blok te verbergen. Controleer dit adres goed \u2014 een fout adres
+// betekent dat donaties verloren gaan.
+const DONATE_ADDRESS = "5UT96ms7pTw9eVLmddtqsrLTMEiTqcpG8zbkxqe5BYnP";
+// ▲▲▲ VEYDOR DONATIE-WALLET ▲▲▲
+
 const T = {
   en: {
     tag: "Don't get rugged. Check any Solana coin in 10 seconds — before you buy in.",
@@ -501,7 +609,11 @@ const T = {
     button: "Check this coin",
     scanning: "Checking\u2026",
     strip: "Crypto can be extremely volatile * you can lose everything * not financial advice * you decide, at your own <button class='risk-link' onclick='openDisclaimer()'>risk</button>",
-    footer: "Veydor reads public blockchain data. A clean result is not a promise \u2014 never invest more than you can afford to lose completely.",
+    footer: "Veydor reads public blockchain data. A clean result is no promise \u2014 never invest more than you can afford to lose.",
+    donateTitle: "Support Veydor",
+    donateText: "Building Veydor takes time and money. Finding it useful? A small donation in Solana to the address below helps a lot \u2014 and is hugely appreciated. Thank you!",
+    donateCopy: "Copy address",
+    donateCopied: "Address copied!",
     loading: "Reading the coin's data and checking\u2026",
     scoreLabel: "Risk score",
     scoreHint: "higher = riskier",
@@ -515,7 +627,8 @@ const T = {
     disclaimerTitle: "Risks \u2014 read before you invest",
     aboutBody: "<p>Veydor is built for beginners. It grew out of real experience: learning through mistakes and lost investments. That's where the idea came from \u2014 giving beginners the tools that didn't exist back then, so you can look at a coin with more insight before you jump in.</p>" +
       "<p>Veydor promises no wins and doesn't know everything. It gives you insight, so you can make more informed choices.</p>" +
-      "<div class='about-promise'><p><b>Always honest, the same for everyone.</b> Veydor bases every check on public on-chain data \u2014 facts from the Solana blockchain, not opinions or hype.</p></div>",
+      "<div class='about-promise'><p><b>Always honest, the same for everyone.</b> Veydor bases every check on public on-chain data \u2014 facts from the Solana blockchain, not opinions or hype.</p></div>" +
+      "<div class='about-promise'><p><b>Your data stays yours.</b> Veydor stores nothing: you never connect your wallet, never enter a password or secret key, and the address you type is used only for the check \u2014 not saved afterwards. No account needed.</p></div>",
     shareBtn: "Share this",
     shareResultLabel: "Share this result",
     shareAppLabel: "Share the app",
@@ -610,6 +723,22 @@ const T = {
     walletTooMany: function(shown, total){ return "This wallet holds " + total + " coins. Showing the " + shown + " largest holdings, riskiest first."; },
     walletScore: "risk",
     walletSafeHint: "Tip: tap any coin to check it in full on the \u201cCheck a coin\u201d tab.",
+    tabBalance: "Balance & charts",
+    balanceLabel: "Paste your wallet address here",
+    balanceButton: "Show my balance",
+    balanceIntro: "See what's in your wallet and what it's worth. Paste your <b>public</b> wallet address \u2014 no connection, no password, no secret key. Tap any coin to open its live chart on DexScreener.",
+    balanceLoading: "Reading your wallet and prices\u2026",
+    balanceEmpty: "We found no priced coins in this wallet. That can be normal \u2014 the wallet may only hold coins with no market yet.",
+    balanceTotal: "Total value",
+    balanceCoins: function(n){ return n + (n === 1 ? " coin" : " coins"); },
+    balanceNoPrice: "no price yet",
+    balanceChartHint: "Tap a coin to open its chart on DexScreener (new tab).",
+    dexTitle: "You're leaving Veydor",
+    dexBody: function(coin){ return "You're about to open the chart for " + coin + " on DexScreener.com \u2014 an external site outside Veydor. Veydor isn't responsible for external sites."; },
+    dexCancel: "Cancel",
+    dexGo: "Go to DexScreener",
+    curEur: "EUR",
+    curUsd: "USD",
     glossTitle: "Word list",
     glossIntro: "Every tricky word from the app, explained in plain language. Don't know a word? Look it up here \u2014 not knowing is just the start of learning.",
     glossary: [
@@ -637,7 +766,11 @@ const T = {
     button: "Check deze munt",
     scanning: "Bezig met checken\u2026",
     strip: "Crypto\u2019s kunnen extreem volatiel zijn * je kunt alles verliezen * geen financieel advies * jij beslist, op eigen <button class='risk-link' onclick='openDisclaimer()'>risico</button>",
-    footer: "Veydor leest openbare blockchain-gegevens. Een schoon resultaat is geen belofte \u2014 investeer nooit meer dan je volledig kunt missen.",
+    footer: "Veydor leest openbare blockchain-data. Een schoon resultaat is geen belofte \u2014 investeer nooit meer dan je kunt missen.",
+    donateTitle: "Steun Veydor",
+    donateText: "Veydor bouwen kost tijd en geld. Vind je het nuttig? Een kleine donatie in Solana op onderstaand adres helpt enorm \u2014 en wordt enorm gewaardeerd. Dankjewel!",
+    donateCopy: "Kopieer adres",
+    donateCopied: "Adres gekopieerd!",
     loading: "Gegevens van de munt lezen en checken\u2026",
     scoreLabel: "Risicoscore",
     scoreHint: "hoger = risicovoller",
@@ -651,7 +784,8 @@ const T = {
     disclaimerTitle: "Risico\u2019s \u2014 lees dit voordat je investeert",
     aboutBody: "<p>Veydor is gebouwd voor beginners. Het ontstond uit de praktijk: leren door fouten en verloren investeringen. Daaruit kwam het idee om beginners de tools te geven die er toen niet waren \u2014 zodat je een crypto met meer inzicht bekijkt v\u00f3\u00f3rdat je erin stapt.</p>" +
       "<p>Veydor belooft geen successen en weet niet alles. Het geeft je inzicht, zodat je bewustere keuzes maakt.</p>" +
-      "<div class='about-promise'><p><b>Altijd eerlijk, voor iedereen gelijk.</b> Veydor baseert elke check op openbare on-chain data \u2014 feiten van de Solana-blockchain, geen meningen of reclame.</p></div>",
+      "<div class='about-promise'><p><b>Altijd eerlijk, voor iedereen gelijk.</b> Veydor baseert elke check op openbare on-chain data \u2014 feiten van de Solana-blockchain, geen meningen of reclame.</p></div>" +
+      "<div class='about-promise'><p><b>Jouw gegevens blijven van jou.</b> Veydor bewaart niets: je koppelt nooit je wallet, geeft nooit een wachtwoord of geheime sleutel, en het adres dat je invoert wordt alleen gebruikt voor de check \u2014 daarna niet opgeslagen. Er is geen account nodig.</p></div>",
     shareBtn: "Delen",
     shareResultLabel: "Deel dit resultaat",
     shareAppLabel: "Deel de app",
@@ -746,6 +880,22 @@ const T = {
     walletTooMany: function(shown, total){ return "Deze wallet bevat " + total + " munten. We tonen de " + shown + " grootste posities, meest risicovol eerst."; },
     walletScore: "risico",
     walletSafeHint: "Tip: tik op een munt om die volledig te checken op het tabblad \u201cMunt checken\u201d.",
+    tabBalance: "Saldo & charts",
+    balanceLabel: "Plak hier je wallet-adres",
+    balanceButton: "Toon mijn saldo",
+    balanceIntro: "Zie wat er in je wallet zit en wat het waard is. Plak je <b>openbare</b> wallet-adres \u2014 geen koppeling, geen wachtwoord, geen geheime sleutel. Tik op een munt om de live chart op DexScreener te openen.",
+    balanceLoading: "Je wallet en prijzen worden gelezen\u2026",
+    balanceEmpty: "We vonden geen munten met een prijs in deze wallet. Dat kan normaal zijn \u2014 de wallet bevat misschien alleen munten zonder markt.",
+    balanceTotal: "Totale waarde",
+    balanceCoins: function(n){ return n + (n === 1 ? " munt" : " munten"); },
+    balanceNoPrice: "nog geen prijs",
+    balanceChartHint: "Tik op een munt om de chart op DexScreener te openen (nieuw tabblad).",
+    dexTitle: "Je verlaat Veydor",
+    dexBody: function(coin){ return "Je staat op het punt de chart van " + coin + " te openen op DexScreener.com \u2014 een externe site buiten Veydor. Veydor is niet verantwoordelijk voor externe sites."; },
+    dexCancel: "Annuleren",
+    dexGo: "Ga naar DexScreener",
+    curEur: "EUR",
+    curUsd: "USD",
     glossTitle: "Woordenlijst",
     glossIntro: "Elk lastig woord uit de app, uitgelegd in gewone taal. Ken je een woord niet? Zoek het hier op \u2014 iets niet weten is gewoon het begin van leren.",
     glossary: [
@@ -790,6 +940,17 @@ function applyStaticText() {
   document.getElementById("t-disc-title").textContent = t.disclaimerTitle;
   document.getElementById("t-disc-body").innerHTML = t.disclaimer;
   document.getElementById("t-footer").textContent = t.footer;
+  // Donatie-blok
+  var donateBlock = document.getElementById("donate-block");
+  if (DONATE_ADDRESS && DONATE_ADDRESS.trim()) {
+    document.getElementById("t-donate-title").textContent = t.donateTitle;
+    document.getElementById("t-donate-text").textContent = t.donateText;
+    document.getElementById("donate-addr").textContent = DONATE_ADDRESS.trim();
+    document.getElementById("t-donate-copy").textContent = t.donateCopy;
+    if (donateBlock) donateBlock.style.display = "";
+  } else {
+    if (donateBlock) donateBlock.style.display = "none";
+  }
   document.getElementById("t-feedback-text").textContent = t.feedbackText;
   var fbLink = document.getElementById("t-feedback-link");
   fbLink.textContent = t.feedbackLink;
@@ -803,6 +964,14 @@ function applyStaticText() {
   }
   document.getElementById("tab-coin").textContent = t.tabCoin;
   document.getElementById("tab-wallet").textContent = t.tabWallet;
+  document.getElementById("tab-balance").textContent = t.tabBalance;
+  document.getElementById("t-balance-label").textContent = t.balanceLabel;
+  document.getElementById("t-balance-intro").innerHTML = t.balanceIntro;
+  document.getElementById("go-balance").textContent = t.balanceButton;
+  document.getElementById("balance-wallet").placeholder = t.walletPlaceholder;
+  document.getElementById("t-dex-title").textContent = t.dexTitle;
+  document.getElementById("t-dex-cancel").textContent = t.dexCancel;
+  document.getElementById("dex-go-link").textContent = t.dexGo;
   document.getElementById("t-wallet-label").textContent = t.walletLabel;
   document.getElementById("t-wallet-intro").innerHTML = t.walletIntro;
   document.getElementById("wallet").placeholder = t.walletPlaceholder;
@@ -842,6 +1011,17 @@ function openDisclaimer() {
 }
 function closeDisclaimer() {
   document.getElementById("disclaimer").classList.remove("open");
+}
+// Bevestiging tonen voordat we naar de externe site DexScreener gaan.
+function confirmDexOpen(url, coin) {
+  const t = T[lang];
+  document.getElementById("t-dex-body").textContent = t.dexBody(coin);
+  const link = document.getElementById("dex-go-link");
+  link.href = url;                 // echte link -> browser staat het nieuwe tabblad toe
+  document.getElementById("dexconfirm").classList.add("open");
+}
+function closeDexConfirm() {
+  document.getElementById("dexconfirm").classList.remove("open");
 }
 
 // Deel-menu openen/sluiten
@@ -889,6 +1069,18 @@ function showToast(msg) {
   el.textContent = msg;
   el.classList.add("show");
   setTimeout(function(){ el.classList.remove("show"); }, 2200);
+}
+
+// Donatie-adres kopiëren naar klembord.
+function copyDonateAddr() {
+  var t = T[lang];
+  var addr = DONATE_ADDRESS.trim();
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(addr).then(function(){ showToast(t.donateCopied); })
+      .catch(function(){ showToast(addr); });
+  } else {
+    showToast(addr);
+  }
 }
 
 // Kleine helper: een fetch die na een aantal seconden vanzelf afbreekt,
@@ -1127,8 +1319,10 @@ function setMode(m) {
   mode = m;
   document.getElementById("tab-coin").classList.toggle("active", m === "coin");
   document.getElementById("tab-wallet").classList.toggle("active", m === "wallet");
-  document.getElementById("scan-coin").style.display   = m === "coin"   ? "" : "none";
-  document.getElementById("scan-wallet").style.display = m === "wallet" ? "" : "none";
+  document.getElementById("tab-balance").classList.toggle("active", m === "balance");
+  document.getElementById("scan-coin").style.display    = m === "coin"    ? "" : "none";
+  document.getElementById("scan-wallet").style.display  = m === "wallet"  ? "" : "none";
+  document.getElementById("scan-balance").style.display = m === "balance" ? "" : "none";
   // resultaat leegmaken bij het wisselen zodat oude uitslag niet blijft staan
   const out = document.getElementById("result");
   out.className = ""; out.innerHTML = ""; lastResult = null;
@@ -1263,6 +1457,155 @@ function checkFromWallet(mint) {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+// ===== Saldo & charts =====
+// Toont wat er in een wallet zit en wat het waard is (euro standaard, dollar
+// schakelbaar). Klik op een munt -> opent de chart op DexScreener (nieuw tabblad).
+let balanceCurrency = "eur";   // "eur" of "usd"
+let eurPerUsd = null;          // wisselkoers, 1x opgehaald
+let lastBalance = null;        // { holdings:[{mint,symbol,name,amount,valueUsd}], totalUsd }
+
+// Wisselkoers USD->EUR ophalen. Lukt dit niet, dan tonen we in dollars.
+async function getEurRate() {
+  if (eurPerUsd != null) return eurPerUsd;
+  try {
+    const res = await fetchWithTimeout("https://api.frankfurter.app/latest?from=USD&to=EUR", {}, 8000);
+    if (res.ok) {
+      const j = await res.json();
+      if (j && j.rates && j.rates.EUR) { eurPerUsd = j.rates.EUR; return eurPerUsd; }
+    }
+  } catch (e) {}
+  return null;
+}
+
+function runBalance() {
+  const owner = document.getElementById("balance-wallet").value.trim();
+  const out = document.getElementById("result");
+  const btn = document.getElementById("go-balance");
+  const t = T[lang];
+
+  if (owner.length < 32 || owner.length > 44 || /[^1-9A-HJ-NP-Za-km-z]/.test(owner)) {
+    lastBalance = null;
+    out.className = "show";
+    out.innerHTML = '<div class="err">' + t.walletBadAddr + '</div>';
+    return;
+  }
+
+  btn.disabled = true; btn.textContent = t.scanning;
+  out.className = "show";
+  out.innerHTML = veydorLoader(t.balanceLoading);
+
+  Promise.all([getWalletTokens(owner), getEurRate()]).then(async function(res){
+    const tokens = res[0];
+    if (!tokens.length) {
+      out.innerHTML = '<div class="loading">' + t.balanceEmpty + '</div>';
+      btn.disabled = false; btn.textContent = t.balanceButton;
+      return;
+    }
+    // Grootste posities eerst; beperken tot een behapbaar aantal.
+    tokens.sort(function(a, b){ return b.amount - a.amount; });
+    const toPrice = tokens.slice(0, WALLET_MAX_CHECKS);
+
+    const holdings = [];
+    let totalUsd = 0;
+    for (let i = 0; i < toPrice.length; i++) {
+      out.innerHTML = veydorLoader(t.walletCheckingN(i, toPrice.length));
+      const tk = toPrice[i];
+      let priceUsd = null, symbol = null, name = null;
+      try {
+        const pair = await getDex(tk.mint);
+        if (pair) {
+          priceUsd = pair.priceUsd != null ? Number(pair.priceUsd) : null;
+          if (pair.baseToken) { symbol = pair.baseToken.symbol || null; name = pair.baseToken.name || null; }
+        }
+      } catch (e) {}
+      const valueUsd = priceUsd != null ? priceUsd * tk.amount : null;
+      if (valueUsd != null) totalUsd += valueUsd;
+      holdings.push({ mint: tk.mint, amount: tk.amount, symbol: symbol, name: name, valueUsd: valueUsd });
+    }
+
+    // munten met waarde bovenaan, grootste eerst; daarna de prijslozen
+    holdings.sort(function(a, b){
+      if (a.valueUsd == null && b.valueUsd == null) return 0;
+      if (a.valueUsd == null) return 1;
+      if (b.valueUsd == null) return -1;
+      return b.valueUsd - a.valueUsd;
+    });
+
+    lastBalance = { holdings: holdings, totalUsd: totalUsd };
+    renderBalance();
+    btn.disabled = false; btn.textContent = t.balanceButton;
+  }).catch(function(err){
+    out.innerHTML = '<div class="err">' + t.somethingWrong + escapeHtml(err.message) + '<br>' + t.rpcErr + '</div>';
+    btn.disabled = false; btn.textContent = t.balanceButton;
+  });
+}
+
+// Bedrag opmaken in de gekozen munteenheid.
+function fmtMoney(usd) {
+  const t = T[lang];
+  if (usd == null) return t.balanceNoPrice;
+  let val = usd, sym = "$";
+  if (balanceCurrency === "eur" && eurPerUsd != null) { val = usd * eurPerUsd; sym = "\u20ac"; }
+  const loc = lang === "nl" ? "nl-NL" : "en-US";
+  const digits = val < 1 ? 6 : 2;
+  return sym + val.toLocaleString(loc, { minimumFractionDigits: 2, maximumFractionDigits: digits });
+}
+
+function setBalanceCurrency(c) {
+  balanceCurrency = c;
+  if (lastBalance) renderBalance();
+}
+
+function renderBalance() {
+  const t = T[lang];
+  const out = document.getElementById("result");
+  if (!lastBalance || !lastBalance.holdings.length) {
+    out.innerHTML = '<div class="loading">' + t.balanceEmpty + '</div>';
+    return;
+  }
+  const h = lastBalance.holdings;
+  // Als er geen euro-koers is, dwing dollar af en verberg de euro-knop niet nodig.
+  const eurAvailable = eurPerUsd != null;
+  const cur = (balanceCurrency === "eur" && !eurAvailable) ? "usd" : balanceCurrency;
+  balanceCurrency = cur;
+
+  const toggle =
+    '<div class="cur-toggle">' +
+      '<button class="' + (cur === "eur" ? "active" : "") + '"' + (eurAvailable ? '' : ' disabled') +
+        ' onclick="setBalanceCurrency(\'eur\')">' + escapeHtml(t.curEur) + '</button>' +
+      '<button class="' + (cur === "usd" ? "active" : "") + '" onclick="setBalanceCurrency(\'usd\')">' + escapeHtml(t.curUsd) + '</button>' +
+    '</div>';
+
+  const total =
+    '<div class="bal-total">' +
+      '<div class="bal-total-label">' + escapeHtml(t.balanceTotal) + '</div>' +
+      '<div class="bal-total-value">' + escapeHtml(fmtMoney(lastBalance.totalUsd)) + '</div>' +
+      '<div class="bal-total-sub">' + escapeHtml(t.balanceCoins(h.length)) + '</div>' +
+    '</div>';
+
+  const items = h.map(function(item){
+    const label = (item.name || item.symbol || item.mint.slice(0, 4) + "\u2026" + item.mint.slice(-4));
+    const sym = item.symbol && item.symbol !== label ? " (" + item.symbol + ")" : "";
+    const amountStr = item.amount.toLocaleString(lang === "nl" ? "nl-NL" : "en-US", { maximumFractionDigits: 4 });
+    const dexUrl = "https://dexscreener.com/solana/" + encodeURIComponent(item.mint);
+    const safeLabel = (label + sym).replace(/'/g, "\\'");
+    return '<div class="bal-item" onclick="confirmDexOpen(\'' + dexUrl + '\',\'' + escapeHtml(safeLabel) + '\')">' +
+        '<div class="bal-body">' +
+          '<div class="bal-name">' + escapeHtml(label + sym) + '</div>' +
+          '<div class="bal-amount">' + escapeHtml(amountStr) + '</div>' +
+        '</div>' +
+        '<div class="bal-value">' + escapeHtml(fmtMoney(item.valueUsd)) + '</div>' +
+        '<div class="pf-arrow">\u2197</div>' +
+      '</div>';
+  }).join("");
+
+  out.className = "show";
+  out.innerHTML =
+    toggle + total + items +
+    '<div class="pf-hint">' + escapeHtml(t.balanceChartHint) + '</div>' +
+    '<div class="full-disclaimer">' + t.disclaimer + '</div>';
+}
+
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, function(m){ return ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" })[m]; });
 }
@@ -1284,6 +1627,7 @@ function veydorLoader(text) {
 
 document.getElementById("mint").addEventListener("keydown", function(e){ if (e.key === "Enter") run(); });
 document.getElementById("wallet").addEventListener("keydown", function(e){ if (e.key === "Enter") runWallet(); });
+document.getElementById("balance-wallet").addEventListener("keydown", function(e){ if (e.key === "Enter") runBalance(); });
 
 applyStaticText();
 </script>

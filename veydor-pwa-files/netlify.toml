@@ -1,0 +1,27 @@
+# netlify.toml — vertelt Netlify hoe dit project in elkaar zit.
+
+[build]
+  # Waar de serverfuncties staan.
+  functions = "netlify/functions"
+  # Er is geen bouwstap nodig; de site is gewoon het index.html-bestand.
+  publish = "."
+
+# Maak het nette adres /api/rpc, dat intern naar de function wijst.
+# De app roept /api/rpc aan; Netlify stuurt dat door naar de function
+# die hierboven is gedefinieerd (rpc.js).
+[[redirects]]
+  from = "/api/rpc"
+  to = "/.netlify/functions/rpc"
+  status = 200
+
+# De service worker mag niet lang gecachet worden, anders krijgen
+# gebruikers updates van de app niet mee.
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/manifest.webmanifest"
+  [headers.values]
+    Content-Type = "application/manifest+json"

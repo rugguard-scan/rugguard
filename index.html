@@ -1705,10 +1705,32 @@ document.getElementById("mint").addEventListener("keydown", function(e){ if (e.k
 document.getElementById("wallet").addEventListener("keydown", function(e){ if (e.key === "Enter") runWallet(); });
 document.getElementById("balance-wallet").addEventListener("keydown", function(e){ if (e.key === "Enter") runBalance(); });
 
-// PWA: service worker registreren zodat Veydor installeerbaar is op het beginscherm.
+// PWA: service worker registreren + automatisch bijwerken.
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", function () {
-    navigator.serviceWorker.register("/sw.js").catch(function () { /* stil falen is prima */ });
+    navigator.serviceWorker.register("/sw.js").then(function (reg) {
+      // Bij het openen actief checken of er een nieuwe versie is.
+      reg.update();
+      // Zodra een nieuwe versie klaarstaat: activeer 'm meteen.
+      reg.addEventListener("updatefound", function () {
+        var nw = reg.installing;
+        if (!nw) return;
+        nw.addEventListener("statechange", function () {
+          if (nw.state === "installed" && navigator.serviceWorker.controller) {
+            nw.postMessage("skipWaiting");
+          }
+        });
+      });
+    }).catch(function () { /* stil falen is prima */ });
+
+    // Als de nieuwe service worker de controle overneemt: pagina 1x verversen
+    // zodat de nieuwste versie meteen zichtbaar is.
+    var refreshing = false;
+    navigator.serviceWorker.addEventListener("controllerchange", function () {
+      if (refreshing) return;
+      refreshing = true;
+      window.location.reload();
+    });
   });
 }
 
